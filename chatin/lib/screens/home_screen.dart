@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: Image.asset(
-                        'assets/images/asset1.avif',
+                        'assets/images/asset1.png',
                         fit: BoxFit.contain,
                       ),
                     ),
