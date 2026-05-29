@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# Node.js (Just in case it's at root level)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Flutter/Dart (Just in case it's at root level)
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Docs & Credentials
+docs/*.json
+docs/*.plist
+docs/android_fingerprint.md
