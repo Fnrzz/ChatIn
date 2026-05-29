@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'chat_screen.dart';
@@ -31,20 +33,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFFA78BFA), // Purple
   ];
 
+  late final StreamSubscription<AuthState> _authStateSubscription;
+
   @override
   void initState() {
     super.initState();
-    _loadSessions();
     _loadAgents();
+    
+    // Reload sessions when user auth state changes (also triggers initially)
+    _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      _loadSessions();
+    });
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
   }
 
   Future<void> _loadSessions() async {
-    final sessions = await DatabaseHelper().getSessions();
-    if (mounted) {
-      setState(() {
-        _sessions = sessions;
-      });
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null) {
+      final sessions = await DatabaseHelper().getSessions(userId);
+      if (mounted) {
+        setState(() {
+          _sessions = sessions;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _sessions = [];
+        });
+      }
     }
+  }
+
+  String _truncateTitle(String? title) {
+    if (title == null || title.trim().isEmpty) return 'New Chat';
+    List<String> words = title.trim().split(RegExp(r'\s+'));
+    if (words.length > 4) {
+      return '${words.take(4).join(' ')}...';
+    }
+    return title;
   }
 
   Future<void> _loadAgents() async {
@@ -287,7 +319,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: HistoryChip(
-                              label: session['title'] ?? 'New Chat',
+                              label: _truncateTitle(session['title']),
                               onTap: () async {
                                 await Navigator.push(
                                   context,
@@ -311,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: HistoryChip(
-                              label: session['title'] ?? 'New Chat',
+                              label: _truncateTitle(session['title']),
                               onTap: () async {
                                 await Navigator.push(
                                   context,

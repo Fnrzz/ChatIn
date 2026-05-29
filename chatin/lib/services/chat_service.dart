@@ -19,8 +19,13 @@ class ChatService {
 
   // Membuat sesi baru di SQLite
   Future<String> createNewSession(String agentId) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('User is not logged in');
+    }
+
     final sessionId = const Uuid().v4();
-    await DatabaseHelper().createSession(sessionId, agentId, 'New Chat');
+    await DatabaseHelper().createSession(sessionId, agentId, 'New Chat', userId);
     return sessionId;
   }
 

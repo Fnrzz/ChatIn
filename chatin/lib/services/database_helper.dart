@@ -35,6 +35,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         agent_id TEXT,
         title TEXT,
+        user_id TEXT,
         created_at INTEGER
       )
     ''');
@@ -56,7 +57,7 @@ class DatabaseHelper {
   // CRUD chat_sessions
   // ==========================================
 
-  Future<void> createSession(String id, String agentId, String title) async {
+  Future<void> createSession(String id, String agentId, String title, String userId) async {
     final db = await database;
     await db.insert(
       'chat_sessions',
@@ -64,16 +65,19 @@ class DatabaseHelper {
         'id': id,
         'agent_id': agentId,
         'title': title,
+        'user_id': userId,
         'created_at': DateTime.now().millisecondsSinceEpoch,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  Future<List<Map<String, dynamic>>> getSessions() async {
+  Future<List<Map<String, dynamic>>> getSessions(String userId) async {
     final db = await database;
     return await db.query(
       'chat_sessions',
+      where: 'user_id = ?',
+      whereArgs: [userId],
       orderBy: 'created_at DESC', // Urutkan dari yang terbaru
     );
   }
