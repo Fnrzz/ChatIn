@@ -13,7 +13,8 @@ class ChatService {
   Future<List<Map<String, dynamic>>> getAgents() async {
     final data = await _supabase
         .from('agents')
-        .select('id, name, type, description');
+        .select('id, name, type, description')
+        .eq('status', 'active');
     return List<Map<String, dynamic>>.from(data);
   }
 

@@ -34,11 +34,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   late final StreamSubscription<AuthState> _authStateSubscription;
+  RealtimeChannel? _agentsChannel;
 
   @override
   void initState() {
     super.initState();
     _loadAgents();
+    _subscribeToAgents();
     
     // Reload sessions when user auth state changes (also triggers initially)
     _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
@@ -49,7 +51,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     _authStateSubscription.cancel();
+    if (_agentsChannel != null) {
+      Supabase.instance.client.removeChannel(_agentsChannel!);
+    }
     super.dispose();
+  }
+
+  /// Subscribe to realtime changes on the 'agents' table
+  void _subscribeToAgents() {
+    _agentsChannel = Supabase.instance.client
+        .channel('public:agents')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'agents',
+          callback: (payload) async {
+            print('Agents table changed: ${payload.eventType}');
+            await Future.delayed(const Duration(milliseconds: 300));
+            _loadAgents();
+          },
+        )
+        .subscribe();
   }
 
   Future<void> _loadSessions() async {
@@ -327,6 +349,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     builder: (context) => ChatScreen(
                                       sessionId: session['id'],
                                       conversationTitle: session['title'],
+                                      initialAgentId: session['agent_id'],
                                     ),
                                   ),
                                 );
@@ -351,6 +374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     builder: (context) => ChatScreen(
                                       sessionId: session['id'],
                                       conversationTitle: session['title'],
+                                      initialAgentId: session['agent_id'],
                                     ),
                                   ),
                                 );

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/chat_message.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_bubble.dart';
@@ -13,6 +14,7 @@ class ChatScreen extends StatefulWidget {
   final String? initialMessage;
   final String? conversationTitle;
   final String? initialAgent;
+  final String? initialAgentId;
 
   const ChatScreen({
     super.key,
@@ -20,6 +22,7 @@ class ChatScreen extends StatefulWidget {
     this.initialMessage,
     this.conversationTitle,
     this.initialAgent,
+    this.initialAgentId,
   });
 
   @override
@@ -42,6 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, dynamic>> _agents = [];
   Map<String, dynamic>? _selectedAgent;
   bool _isLoadingAgents = true;
+  RealtimeChannel? _agentsChannel;
 
   @override
   void initState() {
@@ -51,6 +55,33 @@ class _ChatScreenState extends State<ChatScreen> {
       _conversationTitle = widget.conversationTitle!;
     }
     _loadAgents();
+    _subscribeToAgents();
+  }
+
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    _inputController.dispose();
+    _scrollController.dispose();
+    if (_agentsChannel != null) {
+      Supabase.instance.client.removeChannel(_agentsChannel!);
+    }
+    super.dispose();
+  }
+
+  void _subscribeToAgents() {
+    _agentsChannel = Supabase.instance.client
+        .channel('public:agents:chat')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'agents',
+          callback: (payload) async {
+            await Future.delayed(const Duration(milliseconds: 300));
+            _loadAgents();
+          },
+        )
+        .subscribe();
   }
 
   Future<void> _loadAgents() async {
@@ -58,11 +89,25 @@ class _ChatScreenState extends State<ChatScreen> {
       final agents = await _chatService.getAgents();
       if (!mounted) return;
 
-      Map<String, dynamic>? selected;
+      if (agents.isEmpty) {
+        setState(() {
+          _agents = [];
+          _selectedAgent = null;
+          _isLoadingAgents = false;
+          _isInitializingSession = false;
+        });
+        return;
+      }
 
-      if (agents.isNotEmpty) {
-        if (widget.initialAgent != null) {
-          // Match by agent name from navigation parameter
+      if (_selectedAgent == null) {
+        // Initial load logic
+        Map<String, dynamic>? selected;
+        if (widget.initialAgentId != null) {
+          selected = agents.firstWhere(
+            (a) => a['id'].toString() == widget.initialAgentId,
+            orElse: () => agents.first,
+          );
+        } else if (widget.initialAgent != null) {
           selected = agents.firstWhere(
             (a) =>
                 (a['name'] as String?)?.toLowerCase() ==
@@ -72,20 +117,53 @@ class _ChatScreenState extends State<ChatScreen> {
         } else {
           selected = agents.first;
         }
-      }
 
-      setState(() {
-        _agents = agents;
-        _selectedAgent = selected;
-        _isLoadingAgents = false;
-      });
+        setState(() {
+          _agents = agents;
+          _selectedAgent = selected;
+          _isLoadingAgents = false;
+        });
 
-      if (_selectedAgent != null) {
         _initSession();
       } else {
-        setState(() {
-          _isInitializingSession = false;
-        });
+        // Mid-session real-time update logic
+        final agentStillExists = agents.any((a) => a['id'] == _selectedAgent!['id']);
+
+        if (agentStillExists) {
+          // Agent is still active, just update the list quietly
+          setState(() {
+            _agents = agents;
+            // Optionally update the selected agent's details if they changed
+            _selectedAgent = agents.firstWhere((a) => a['id'] == _selectedAgent!['id']);
+            _isLoadingAgents = false;
+          });
+        } else {
+          // Agent was deactivated/drafted by admin mid-session!
+          // Switch to the first available agent and reset session
+          setState(() {
+            _agents = agents;
+            _selectedAgent = agents.first;
+            _isLoadingAgents = false;
+            
+            // Reset chat state
+            _streamSubscription?.cancel();
+            _messages.clear();
+            _conversationTitle = 'New Chat';
+            _isGenerating = false;
+            _sessionId = null;
+          });
+          
+          _initSession();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('The current agent is no longer available. Switched to another agent.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -183,13 +261,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _initSession();
   }
 
-  @override
-  void dispose() {
-    _inputController.dispose();
-    _scrollController.dispose();
-    _streamSubscription?.cancel();
-    super.dispose();
-  }
+
 
   void _sendMessage(String text) {
     if (text.trim().isEmpty) return;
@@ -374,18 +446,51 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 // Right controls: Agent Selector and Compose button
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AgentSelector(
-                      agents: _agents,
-                      currentAgent: _selectedAgent,
-                      onAgentChanged: _onAgentChanged,
-                    ),
-                    const SizedBox(width: 8),
-                    if (_sessionId != null) ...[
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: AgentSelector(
+                          agents: _agents,
+                          currentAgent: _selectedAgent,
+                          onAgentChanged: _onAgentChanged,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_sessionId != null) ...[
+                        GestureDetector(
+                          onTap: _deleteCurrentSession,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF1E1E1E),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      // Compose button
                       GestureDetector(
-                        onTap: _deleteCurrentSession,
+                        onTap: () {
+                          // New chat action
+                          _streamSubscription?.cancel();
+                          setState(() {
+                            _messages.clear();
+                            _conversationTitle = 'New Chat';
+                            _isGenerating = false;
+                            _sessionId = null;
+                          });
+                          _initSession();
+                        },
                         child: Container(
                           width: 44,
                           height: 44,
@@ -394,42 +499,14 @@ class _ChatScreenState extends State<ChatScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
+                            Icons.edit_outlined,
+                            color: Colors.white,
                             size: 20,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
                     ],
-                    // Compose button
-                    GestureDetector(
-                      onTap: () {
-                        // New chat action
-                        _streamSubscription?.cancel();
-                        setState(() {
-                          _messages.clear();
-                          _conversationTitle = 'New Chat';
-                          _isGenerating = false;
-                          _sessionId = null;
-                        });
-                        _initSession();
-                      },
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1E1E1E),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
