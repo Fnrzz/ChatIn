@@ -37,28 +37,69 @@ class ChatService {
       // a. Simpan pesan user ke SQLite
       await DatabaseHelper().insertMessage(sessionId, 'user', message);
 
-      // b. Ambil 10 riwayat pesan terakhir dari SQLite untuk konteks Next.js
-      final historyData = await DatabaseHelper().getSessionMessages(sessionId);
-      final recentHistory = historyData.length > 10
-          ? historyData.sublist(historyData.length - 10)
-          : historyData;
+      // b. Tarik Data & Cek Batas (Threshold) untuk Rolling Summary
+      String? oldSummary = await DatabaseHelper().getSessionSummary(sessionId);
+      List<Map<String, dynamic>> unsummarizedMessages = await DatabaseHelper().getUnsummarizedMessages(sessionId);
 
-      final history = recentHistory.map((m) => {
-        'role': m['role'],
-        'content': m['content']
-      }).toList();
-
-      // c. Lakukan HTTP POST ke Next.js
       final apiUrl = dotenv.env['NEXT_API_URL'];
       if (apiUrl == null) throw Exception('NEXT_API_URL is not set in .env');
 
       final apiKey = dotenv.env['API_SECRET_KEY'];
       if (apiKey == null) throw Exception('API_SECRET_KEY is not set in .env');
 
+      // c. Logika Auto-Summarize (Setiap 5 Pesan)
+      if (unsummarizedMessages.length >= 5) {
+        // Ganti ujung url /chat menjadi /chat/summarize
+        final summarizeUrl = apiUrl.replaceAll(RegExp(r'/chat$'), '/chat/summarize');
+        
+        final summarizeBody = jsonEncode({
+          'oldSummary': oldSummary ?? '',
+          'newMessages': unsummarizedMessages.map((m) => {
+            'role': m['role'],
+            'content': m['content']
+          }).toList(),
+        });
+
+        final sumResponse = await client.post(
+          Uri.parse(summarizeUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+          },
+          body: summarizeBody,
+        );
+
+        if (sumResponse.statusCode == 200) {
+          final sumData = jsonDecode(sumResponse.body);
+          final newSummary = sumData['summary'];
+          
+          if (newSummary != null && newSummary.toString().isNotEmpty) {
+            // Update summary di SQLite
+            await DatabaseHelper().updateSessionSummary(sessionId, newSummary);
+            
+            // Tandai pesan-pesan sebagai sudah dirangkum
+            final messageIds = unsummarizedMessages.map((m) => m['id'] as int).toList();
+            await DatabaseHelper().markMessagesAsSummarized(sessionId, messageIds);
+            
+            // Update state lokal
+            oldSummary = newSummary;
+            unsummarizedMessages = []; // Kosongkan karena semua sudah dirangkum
+          }
+        }
+      }
+
+      // d. Lakukan HTTP POST ke Next.js (Chat Utama)
+      final history = unsummarizedMessages.map((m) => {
+        'role': m['role'],
+        'content': m['content']
+      }).toList();
+
       final requestBody = jsonEncode({
         'message': message,
         'agentId': agentId,
         'history': history,
+        'sessionId': sessionId,
+        'summary': oldSummary,
       });
 
       var response = await client.post(
@@ -90,7 +131,7 @@ class ChatService {
         throw Exception('Server error: ${response.statusCode}');
       }
 
-      // d. Simpan jawaban AI (aiResponse) ke SQLite
+      // e. Simpan jawaban AI (aiResponse) ke SQLite
       String aiResponse = '';
       try {
         final jsonResponse = jsonDecode(response.body);
@@ -102,6 +143,7 @@ class ChatService {
 
       if (aiResponse.isEmpty) throw Exception('Empty response from server');
 
+      // Insert AI response to SQLite (default is_summarized = 0)
       await DatabaseHelper().insertMessage(sessionId, 'assistant', aiResponse);
 
       // Simulasi streaming ke UI

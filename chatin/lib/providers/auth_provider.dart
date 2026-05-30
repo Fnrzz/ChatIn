@@ -86,6 +86,12 @@ class AuthProvider extends ChangeNotifier {
         idToken: idToken,
       );
     } catch (e) {
+      if (e.toString().contains('canceled') || 
+          e.toString().contains('sign_in_canceled') || 
+          e.toString().contains('GoogleSignInExceptionCode.canceled')) {
+        // User membatalkan proses login, abaikan error secara diam-diam.
+        return;
+      }
       rethrow;
     } finally {
       _isLoading = false;

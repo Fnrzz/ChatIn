@@ -36,7 +36,8 @@ class DatabaseHelper {
         agent_id TEXT,
         title TEXT,
         user_id TEXT,
-        created_at INTEGER
+        created_at INTEGER,
+        summary TEXT
       )
     ''');
 
@@ -47,6 +48,7 @@ class DatabaseHelper {
         session_id TEXT,
         role TEXT,
         content TEXT,
+        is_summarized INTEGER DEFAULT 0,
         created_at INTEGER,
         FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
       )
@@ -126,6 +128,59 @@ class DatabaseHelper {
       where: 'session_id = ?',
       whereArgs: [sessionId],
       orderBy: 'created_at ASC', // Urutkan dari yang terlama ke terbaru (untuk UI Chat)
+    );
+  }
+
+  // ==========================================
+  // Fitur Rolling Summary
+  // ==========================================
+
+  Future<String?> getSessionSummary(String sessionId) async {
+    final db = await database;
+    final result = await db.query(
+      'chat_sessions',
+      columns: ['summary'],
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['summary'] as String?;
+    }
+    return null;
+  }
+
+  Future<void> updateSessionSummary(String sessionId, String newSummary) async {
+    final db = await database;
+    await db.update(
+      'chat_sessions',
+      {'summary': newSummary},
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getUnsummarizedMessages(String sessionId) async {
+    final db = await database;
+    return await db.query(
+      'chat_messages',
+      where: 'session_id = ? AND is_summarized = 0',
+      whereArgs: [sessionId],
+      orderBy: 'created_at ASC',
+    );
+  }
+
+  Future<void> markMessagesAsSummarized(String sessionId, List<int> messageIds) async {
+    if (messageIds.isEmpty) return;
+    
+    final db = await database;
+    final placeholders = List.filled(messageIds.length, '?').join(',');
+    
+    await db.update(
+      'chat_messages',
+      {'is_summarized': 1},
+      where: 'session_id = ? AND id IN ($placeholders)',
+      whereArgs: [sessionId, ...messageIds],
     );
   }
 }
