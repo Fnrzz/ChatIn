@@ -185,11 +185,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
-      final agentId = _selectedAgent!['id'].toString();
-      
-      if (_sessionId == null) {
-        _sessionId = await _chatService.createNewSession(agentId);
-      } else {
+      if (_sessionId != null) {
         await _loadLocalHistory();
       }
 
@@ -263,14 +259,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 
-  void _sendMessage(String text) {
+  Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
+    
     if (_sessionId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Session not ready yet.')),
-      );
-      return;
+      if (_selectedAgent == null) return;
+      try {
+        _sessionId = await _chatService.createNewSession(_selectedAgent!['id'].toString());
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to start session: $e')),
+          );
+        }
+        return;
+      }
     }
+    
+    if (!mounted) return;
 
     setState(() {
       // Add user message

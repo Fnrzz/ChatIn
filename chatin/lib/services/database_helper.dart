@@ -76,12 +76,21 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getSessions(String userId) async {
     final db = await database;
-    return await db.query(
-      'chat_sessions',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'created_at DESC', // Urutkan dari yang terbaru
-    );
+    
+    // Clean up empty sessions asynchronously in the background so they don't pile up
+    db.rawDelete('''
+      DELETE FROM chat_sessions 
+      WHERE user_id = ? 
+        AND (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = chat_sessions.id) = 0
+    ''', [userId]).catchError((_) => 0);
+
+    return await db.rawQuery('''
+      SELECT s.* 
+      FROM chat_sessions s
+      WHERE s.user_id = ? 
+        AND (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) > 0
+      ORDER BY s.created_at DESC
+    ''', [userId]);
   }
 
   Future<void> updateSessionTitle(String id, String newTitle) async {

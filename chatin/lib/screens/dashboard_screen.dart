@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'chat_screen.dart';
+import 'history_screen.dart';
+import 'agents_screen.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/history_chip.dart';
 import '../widgets/agent_card.dart';
@@ -316,7 +318,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 40),
 
               // Chat History Header
-              SectionHeader(title: 'Chat history', onSeeAll: () {}),
+              SectionHeader(
+                title: 'Chat history',
+                onSeeAll: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                  );
+                  _loadSessions();
+                },
+              ),
               const SizedBox(height: 16),
 
               // Chat History Chips
@@ -390,7 +401,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 40),
 
               // Popular Agent Header
-              SectionHeader(title: 'Popular Agent', onSeeAll: () {}),
+              SectionHeader(
+                title: 'Popular Agent',
+                onSeeAll: () async {
+                  final shouldReload = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AgentsScreen()),
+                  );
+                  // Reload sessions if the user started a chat from the Agents screen
+                  if (shouldReload == true) {
+                    _loadSessions();
+                  }
+                },
+              ),
               const SizedBox(height: 16),
 
               // Popular Agent Cards (Horizontal Scroll)
