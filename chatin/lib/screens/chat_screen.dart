@@ -37,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _isGenerating = false;
   String _conversationTitle = 'New Chat';
-  StreamSubscription<String>? _streamSubscription;
+  StreamSubscription<String>? _chatSubscription;
   String? _sessionId;
   bool _isInitializingSession = true;
 
@@ -60,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _streamSubscription?.cancel();
+    _chatSubscription?.cancel();
     _inputController.dispose();
     _scrollController.dispose();
     if (_agentsChannel != null) {
@@ -146,7 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
             _isLoadingAgents = false;
             
             // Reset chat state
-            _streamSubscription?.cancel();
+            _chatSubscription?.cancel();
             _messages.clear();
             _conversationTitle = 'New Chat';
             _isGenerating = false;
@@ -245,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> {
       return; // Same agent, do nothing
     }
 
-    _streamSubscription?.cancel();
+    _chatSubscription?.cancel();
     setState(() {
       _selectedAgent = newAgent;
       _messages.clear();
@@ -310,7 +310,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String aiResponse = '';
     final agentId = _selectedAgent!['id'].toString();
 
-    _streamSubscription =
+    _chatSubscription =
         _chatService.sendMessage(userMessage, _sessionId!, agentId).listen(
       (chunk) {
         aiResponse += chunk;
@@ -343,7 +343,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _stopGenerating() {
-    _streamSubscription?.cancel();
+    _chatSubscription?.cancel();
     setState(() {
       _isGenerating = false;
     });
@@ -398,26 +398,39 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E8), // Cream background like design
-      body: Column(
-        children: [
-          // ── Top Section (cream background) ──
-          _buildTopBar(),
+    return PopScope(
+      canPop: !_isGenerating,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _isGenerating) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mohon tunggu AI selesai membalas...'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F0E8), // Cream background like design
+        body: Column(
+          children: [
+            // ── Top Section (cream background) ──
+            _buildTopBar(),
 
-          // ── Chat Area (dark background) ──
-          Expanded(child: _buildChatArea()),
+            // ── Chat Area (dark background) ──
+            Expanded(child: _buildChatArea()),
 
-          // ── Stop generate button ──
-          if (_isGenerating) _buildStopButton(),
+            // ── Stop generate button ──
+            if (_isGenerating) _buildStopButton(),
 
-          // ── Input bar ──
-          ChatInputBar(
-            controller: _inputController,
-            isGenerating: _isGenerating || _isInitializingSession || _isLoadingAgents,
-            onSend: () => _sendMessage(_inputController.text),
-          ),
-        ],
+            // ── Input bar ──
+            ChatInputBar(
+              controller: _inputController,
+              isGenerating: _isGenerating || _isInitializingSession || _isLoadingAgents,
+              onSend: () => _sendMessage(_inputController.text),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -436,7 +449,18 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 // Back button
                 GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    if (!_isGenerating) {
+                      Navigator.pop(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Mohon tunggu AI selesai membalas...'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
                   child: Container(
                     width: 44,
                     height: 44,
@@ -488,7 +512,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       GestureDetector(
                         onTap: () {
                           // New chat action
-                          _streamSubscription?.cancel();
+                          _chatSubscription?.cancel();
                           setState(() {
                             _messages.clear();
                             _conversationTitle = 'New Chat';
