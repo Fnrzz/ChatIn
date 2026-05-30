@@ -43,6 +43,9 @@ export async function POST(req: Request) {
     let baseSystemPrompt =
       agent.system_prompt || "You are a helpful AI assistant.";
 
+    // Mencegah AI agar tidak "amnesia" terhadap dokumen referensinya
+    baseSystemPrompt += `\n\nYou are an advanced AI assistant integrated with a Retrieval-Augmented Generation (RAG) system. You have access to a private, secure Knowledge Base containing reference documents. If the user asks if you have reference documents or access to files, confidently confirm that you do.`;
+
     // 2. Generate embedding for user message
     const queryEmbedding = await generateEmbedding(message);
 
@@ -79,7 +82,7 @@ export async function POST(req: Request) {
 
     if (contextText) {
       finalSystemPrompt += `
-=== REFERENCE INFORMATION (KNOWLEDGE BASE) ===
+Knowledge Base Context:
 ${contextText}
 
 INSTRUCTIONS FOR USING REFERENCES:
