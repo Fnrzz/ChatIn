@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { message, agentId, history = [] } = body;
+    const { message, agentId, history = [], sessionId, summary } = body;
 
     if (!message || !agentId) {
       return NextResponse.json(
@@ -72,6 +72,10 @@ export async function POST(req: Request) {
 
     // 5. Build final system prompt (UNIVERSAL RAG)
     let finalSystemPrompt = baseSystemPrompt;
+
+    if (summary) {
+      finalSystemPrompt += `\n\nPrevious conversation context: ${summary}`;
+    }
 
     if (contextText) {
       finalSystemPrompt += `
