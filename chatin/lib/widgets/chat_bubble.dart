@@ -28,9 +28,7 @@ class ChatBubble extends StatelessWidget {
               Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(shape: BoxShape.circle),
                 child: const Icon(
                   Icons.filter_vintage,
                   color: Colors.white70,
@@ -39,7 +37,7 @@ class ChatBubble extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               const Text(
-                'ChaTin',
+                'ChatIn',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
@@ -81,10 +79,7 @@ class ChatBubble extends StatelessWidget {
                 height: 1.45,
                 fontWeight: FontWeight.bold,
               ),
-              listBullet: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-              ),
+              listBullet: const TextStyle(color: Colors.white, fontSize: 15),
             ),
           ),
         ),
@@ -110,11 +105,7 @@ class ChatBubble extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Color(0xFFF8BBD0),
                 ),
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                child: const Icon(Icons.person, color: Colors.white, size: 16),
               ),
               const SizedBox(width: 6),
               const Text(
