@@ -43,11 +43,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadAgents();
     _subscribeToAgents();
-    
+
     // Reload sessions when user auth state changes (also triggers initially)
-    _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      _loadSessions();
-    });
+    _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange
+        .listen((data) {
+          _loadSessions();
+        });
   }
 
   @override
@@ -68,7 +69,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           schema: 'public',
           table: 'agents',
           callback: (payload) async {
-            print('Agents table changed: ${payload.eventType}');
             await Future.delayed(const Duration(milliseconds: 300));
             _loadAgents();
           },
@@ -124,11 +124,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Generate initial message based on agent name
   String _generateInitialMessage(String agentName) {
-    if (agentName.toLowerCase().contains('psikolog')) {
-      return 'Halo, saya ingin berkonsultasi tentang kesehatan mental dan perasaan saya.';
-    } else if (agentName.toLowerCase().contains('ui/ux')) {
-      return 'Halo, tolong bantu saya mereview design system dan alur pengguna aplikasi saya.';
-    }
     return 'Halo $agentName, saya butuh bantuan Anda.';
   }
 
@@ -136,10 +131,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     const darkGrey = Color(0xFF1E1E1E);
     const primaryYellow = Color(0xFFFFD500);
-
-    final authProvider = context.watch<AuthProvider>();
-    final userName =
-        authProvider.user?.userMetadata?['name'] as String? ?? 'User';
 
     return ScreenBackground(
       child: SingleChildScrollView(
@@ -254,7 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Main Title
               Text(
-                'Hello, $userName 👋🏻\nReady to chat?',
+                'Ready to start a session?',
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -323,7 +314,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onSeeAll: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const HistoryScreen(),
+                    ),
                   );
                   _loadSessions();
                 },
@@ -347,53 +340,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        children: _sessions.asMap().entries.where((e) => e.key % 2 == 0).map((e) {
-                          final session = e.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: HistoryChip(
-                              label: _truncateTitle(session['title']),
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
-                                      sessionId: session['id'],
-                                      conversationTitle: session['title'],
-                                      initialAgentId: session['agent_id'],
-                                    ),
-                                  ),
-                                );
-                                _loadSessions();
-                              },
-                            ),
-                          );
-                        }).toList(),
+                        children: _sessions
+                            .asMap()
+                            .entries
+                            .where((e) => e.key % 2 == 0)
+                            .map((e) {
+                              final session = e.value;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: HistoryChip(
+                                  label: _truncateTitle(session['title']),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatScreen(
+                                          sessionId: session['id'],
+                                          conversationTitle: session['title'],
+                                          initialAgentId: session['agent_id'],
+                                        ),
+                                      ),
+                                    );
+                                    _loadSessions();
+                                  },
+                                ),
+                              );
+                            })
+                            .toList(),
                       ),
                       const SizedBox(height: 12),
                       Row(
-                        children: _sessions.asMap().entries.where((e) => e.key % 2 != 0).map((e) {
-                          final session = e.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: HistoryChip(
-                              label: _truncateTitle(session['title']),
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
-                                      sessionId: session['id'],
-                                      conversationTitle: session['title'],
-                                      initialAgentId: session['agent_id'],
-                                    ),
-                                  ),
-                                );
-                                _loadSessions();
-                              },
-                            ),
-                          );
-                        }).toList(),
+                        children: _sessions
+                            .asMap()
+                            .entries
+                            .where((e) => e.key % 2 != 0)
+                            .map((e) {
+                              final session = e.value;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: HistoryChip(
+                                  label: _truncateTitle(session['title']),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatScreen(
+                                          sessionId: session['id'],
+                                          conversationTitle: session['title'],
+                                          initialAgentId: session['agent_id'],
+                                        ),
+                                      ),
+                                    );
+                                    _loadSessions();
+                                  },
+                                ),
+                              );
+                            })
+                            .toList(),
                       ),
                     ],
                   ),
@@ -406,7 +409,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onSeeAll: () async {
                   final shouldReload = await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AgentsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const AgentsScreen(),
+                    ),
                   );
                   // Reload sessions if the user started a chat from the Agents screen
                   if (shouldReload == true) {
@@ -442,7 +447,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       final agent = entry.value;
 
                       final name = agent['name'] as String? ?? 'Agent';
-                      final desc = agent['description'] as String? ?? 'Assistant';
+                      final desc =
+                          agent['description'] as String? ?? 'Assistant';
                       final bgColor = _agentColors[index % _agentColors.length];
 
                       return Padding(
