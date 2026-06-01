@@ -73,7 +73,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 ),
                 const SizedBox(width: 6),
                 const Text(
-                  'ChaTin',
+                  'ChatIn',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
