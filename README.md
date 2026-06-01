@@ -26,11 +26,11 @@
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/01_home.png" width="220" alt="Home Screen"/>
+  <img src="assets/screenshots/homepage.png" width="220" alt="Home Screen"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/screenshots/02_dashboard.png" width="220" alt="Dashboard Screen"/>
+  <img src="assets/screenshots/dashboardpage.png" width="220" alt="Dashboard Screen"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/screenshots/03_chat.png" width="220" alt="Chat Screen"/>
+  <img src="assets/screenshots/chatroom.png" width="220" alt="Chat Screen"/>
 </p>
 
 <p align="center">
@@ -74,14 +74,14 @@ Setiap agen memiliki konteks obrolan yang **terisolasi** — percakapan dengan P
 
 ## ⚡ Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Mobile** | Flutter (Dart) | Cross-platform native UI for Android & iOS |
-| **Admin Dashboard** | Next.js 16 | Agent management, RAG pipeline, chat playground |
-| **Backend & Auth** | Supabase | PostgreSQL + Auth + RLS + Realtime |
-| **Vector Database** | pgvector (Supabase) | Semantic search for RAG knowledge base |
-| **AI / LLM** | Sumopod API | Chat completions & text embeddings |
-| **Local Storage** | SQLite (sqflite) | Offline chat history on device |
+| Layer               | Technology          | Purpose                                         |
+| ------------------- | ------------------- | ----------------------------------------------- |
+| **Mobile**          | Flutter (Dart)      | Cross-platform native UI for Android & iOS      |
+| **Admin Dashboard** | Next.js 16          | Agent management, RAG pipeline, chat playground |
+| **Backend & Auth**  | Supabase            | PostgreSQL + Auth + RLS + Realtime              |
+| **Vector Database** | pgvector (Supabase) | Semantic search for RAG knowledge base          |
+| **AI / LLM**        | Sumopod API         | Chat completions & text embeddings              |
+| **Local Storage**   | SQLite (sqflite)    | Offline chat history on device                  |
 
 ---
 
@@ -127,6 +127,7 @@ ChatIn/
 ## 🔑 Key Features
 
 ### Mobile App (Flutter)
+
 - ✅ **Multi-Agent Chat** — Choose from specialized AI agents with unique personas
 - ✅ **Google Sign-In** — Native authentication via `google_sign_in` v7.x
 - ✅ **Chat History** — Persistent conversations stored locally with SQLite
@@ -135,6 +136,7 @@ ChatIn/
 - ✅ **Beautiful UI** — Clean, modern interface with custom widgets
 
 ### Admin Dashboard (Next.js)
+
 - ✅ **Agent Management** — Create, edit, and configure AI agents with custom system prompts
 - ✅ **Knowledge Base (RAG)** — Upload documents, automatic chunking & vector embedding
 - ✅ **Chat Playground** — Test agents directly from the dashboard
@@ -206,13 +208,13 @@ npm run dev
 
 ## 🔒 Security
 
-| Feature | Implementation |
-|---------|---------------|
-| **API Protection** | Custom `x-api-key` header validation on all chat endpoints |
-| **Row Level Security** | Supabase RLS policies ensure data isolation per user |
-| **Session Management** | Encrypted auth tokens managed by Supabase Auth |
-| **Environment Variables** | All secrets stored in `.env` files (excluded from Git) |
-| **Dual Authentication** | API Key for external clients + Session auth for dashboard |
+| Feature                   | Implementation                                             |
+| ------------------------- | ---------------------------------------------------------- |
+| **API Protection**        | Custom `x-api-key` header validation on all chat endpoints |
+| **Row Level Security**    | Supabase RLS policies ensure data isolation per user       |
+| **Session Management**    | Encrypted auth tokens managed by Supabase Auth             |
+| **Environment Variables** | All secrets stored in `.env` files (excluded from Git)     |
+| **Dual Authentication**   | API Key for external clients + Session auth for dashboard  |
 
 ---
 
