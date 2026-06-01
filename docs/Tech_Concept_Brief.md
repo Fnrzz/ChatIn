@@ -30,11 +30,22 @@ Sistem ChatIn dibangun dengan pendekatan three-tier: mobile client (Flutter), ba
 ## **2.1 Diagram Arsitektur (Konseptual)**
 
 ```text
-                                         [Next.js Dashboard (Admin)]
-                                                      ↕
-[Flutter App (End-User)] ↔ [Supabase (Auth, DB, Vector DB dg pgvector, Storage)] ↔ [Sumopod API (LLM & Embedding)]
-                                                      ↕
-                                          [Supabase Edge Functions]
+┌──────────────────────┐     ┌──────────────────────────────────────────┐
+│                      │     │           Supabase (BaaS)                │
+│   Flutter App        │◄───►│  ┌─────────┐ ┌────────┐ ┌───────────┐  │
+│   (Android & iOS)    │     │  │  Auth    │ │ Postgres│ │ pgvector  │  │
+│                      │     │  │(Google,  │ │   DB    │ │ (RAG)     │  │
+└───────┬──────────────┘     │  │ Email)   │ └────────┘ └───────────┘  │
+        │                    └──────────┬───────────────────────────────┘
+        │ (Chat API)                    │
+        ▼                               │
+┌──────────────────────┐                │
+│   Next.js Dashboard  │◄───────────────┘
+│   (Admin Panel)      │◄──────────────────► Sumopod API (LLM & Embedding)
+│   • Agent Management │
+│   • Knowledge Base   │
+│   • RAG Pipeline     │
+└──────────────────────┘
 ```
 
 ## **2.2 Stack Teknologi**
@@ -100,7 +111,7 @@ Keamanan data menjadi prioritas utama, terutama mengingat sensitivitas konten ob
 | **1\. Onboarding** | Download app, daftar akun                 | Supabase Auth (email/Google/Apple)               |
 | **2\. Eksplorasi** | Lihat grid Ruang Spesialis di Home Screen | Flutter Widget, Supabase DB (fetch katalog agen) |
 | **3\. Konversi**   | Pilih agen Premium → muncul Paywall       | Flutter + Google Play Billing / Apple IAP        |
-| **4\. Interaksi**  | Kirim pesan, terima balasan AI            | Sumopod API + Supabase Edge Functions            |
+| **4\. Interaksi**  | Kirim pesan, terima balasan AI            | Next.js API + Sumopod API                        |
 | **5\. Retensi**    | Buka ulang app, lanjutkan obrolan         | Supabase Realtime + PostgreSQL (load history)    |
 
 # **5\. Skema Database (Konseptual)**
@@ -172,6 +183,6 @@ Jika koneksi internet terputus, aplikasi harus menampilkan pesan error yang rama
 
 ## **Pengelolaan API Key**
 
-Kunci API Sumopod tidak boleh di-hardcode di kode Flutter (client-side). Seluruh panggilan ke LLM harus dirutekan melalui Supabase Edge Functions sebagai proxy aman, sehingga API key hanya ada di server environment.
+Kunci API Sumopod tidak boleh di-hardcode di kode Flutter (client-side). Seluruh panggilan ke LLM harus dirutekan melalui Next.js API sebagai proxy aman, sehingga API key hanya ada di server environment.
 
 _ChatIn Tech Concept Brief · Draf v1.0 · Berdasarkan PRD Revisi 1_

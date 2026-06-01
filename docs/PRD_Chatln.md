@@ -57,8 +57,8 @@ ChatIn adalah aplikasi _mobile_ yang menyediakan layanan asisten AI interaktif. 
   - **Autentikasi:** Menggunakan _Supabase Auth_ untuk mengelola pendaftaran, login _social_, dan keamanan sesi pengguna.
   - **Keamanan (Row Level Security - RLS):** Mengaktifkan kebijakan RLS agar pengguna hanya dapat membaca dan menulis riwayat obrolannya sendiri, memastikan privasi tingkat tinggi.
 - **Penyedia Layanan AI (LLM): Sumopod**
-  - **Integrasi API:** Aplikasi (atau _Edge Functions_ di Supabase) akan berkomunikasi langsung dengan API dari _provider_ Sumopod.
-  - **Pengaturan Model:** API Sumopod akan dikonfigurasi untuk menerima _system prompt_ yang berbeda-beda tergantung pada "Ruang Chat" yang diakses oleh pengguna.
+  - **Integrasi API:** Aplikasi mobile akan berkomunikasi dengan endpoint Chat API di Next.js Dashboard, yang bertindak sebagai _proxy_ aman untuk memanggil API Sumopod.
+  - **Pengaturan Model:** Next.js API akan mengelola panggilan LLM dengan _system prompt_ yang berbeda-beda tergantung pada "Ruang Chat" yang diakses oleh pengguna.
   - **Manajemen Konteks:** Aplikasi akan mengirimkan serangkaian riwayat pesan sebelumnya bersama pesan baru ke API Sumopod untuk menjaga kelangsungan percakapan.
 
 **5\. Alur Pengguna (User Flow)**
@@ -66,7 +66,7 @@ ChatIn adalah aplikasi _mobile_ yang menyediakan layanan asisten AI interaktif. 
 - **Onboarding:** Pengguna mengunduh ChatIn, mendaftar akun menggunakan integrasi _Supabase Auth_, dan melihat layar perkenalan.
 - **Eksplorasi:** Layar utama (_Home Screen_) yang dibangun dengan _widget_ Flutter menampilkan grid/daftar "Ruang Spesialis".
 - **Konversi (Paywall):** Jika pengguna memilih agen spesialis berlabel Premium, muncul layar penawaran (_paywall_) yang terhubung dengan _in-app purchase_.
-- **Berinteraksi:** Setelah masuk ke ruang chat, pengguna mengetik pesan. Pesan dikirim melalui API Sumopod, dan balasannya langsung di-render di UI obrolan.
+- **Berinteraksi:** Setelah masuk ke ruang chat, pengguna mengetik pesan. Pesan dikirim melalui Chat API (Next.js) ke Sumopod, dan balasannya langsung di-render di UI obrolan.
 - **Retensi & Sinkronisasi:** Pesan disimpan ke _database_ Supabase. Saat aplikasi ditutup dan dibuka lagi, Flutter me-_load_ kembali obrolan tersebut sehingga pengguna bisa langsung melanjutkan percakapan.
 
 **6\. Kriteria Keberhasilan (Success Metrics)**

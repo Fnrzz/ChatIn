@@ -53,14 +53,16 @@ Setiap agen memiliki konteks obrolan yang **terisolasi** — percakapan dengan P
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌──────────────────────┐     ┌──────────────────────────────────────────┐
 │                      │     │           Supabase (BaaS)                │
-│   Flutter App        │◄───►│  ┌─────────┐ ┌────────┐ ┌───────────┐  │
+│   Flutter App        │◄───►│  ┌─────────-┐ ┌──────-──┐ ┌───────────┐  │
 │   (Android & iOS)    │     │  │  Auth    │ │ Postgres│ │ pgvector  │  │
 │                      │     │  │(Google,  │ │   DB    │ │ (RAG)     │  │
-└──────────────────────┘     │  │ Email)   │ └────────┘ └───────────┘  │
-                             └──────────┬───────────────────────────────┘
+└───────┬──────────────┘     │  │ Email)   │ └──────-──┘ └───────────┘  │
+        │                    └──────────┬───────────────────────────────┘
+        │ (Chat API)                    │
+        ▼                               │
 ┌──────────────────────┐                │
 │   Next.js Dashboard  │◄───────────────┘
 │   (Admin Panel)      │◄──────────────────► Sumopod API (LLM & Embedding)
