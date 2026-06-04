@@ -26,12 +26,21 @@ class ChatService {
     }
 
     final sessionId = const Uuid().v4();
-    await DatabaseHelper().createSession(sessionId, agentId, 'New Chat', userId);
+    await DatabaseHelper().createSession(
+      sessionId,
+      agentId,
+      'New Chat',
+      userId,
+    );
     return sessionId;
   }
 
   // Mengirim pesan dan menyimpan ke SQLite
-  Stream<String> sendMessage(String message, String sessionId, String agentId) async* {
+  Stream<String> sendMessage(
+    String message,
+    String sessionId,
+    String agentId,
+  ) async* {
     final client = http.Client();
     try {
       // a. Simpan pesan user ke SQLite
@@ -39,7 +48,8 @@ class ChatService {
 
       // b. Tarik Data & Cek Batas (Threshold) untuk Rolling Summary
       String? oldSummary = await DatabaseHelper().getSessionSummary(sessionId);
-      List<Map<String, dynamic>> unsummarizedMessages = await DatabaseHelper().getUnsummarizedMessages(sessionId);
+      List<Map<String, dynamic>> unsummarizedMessages = await DatabaseHelper()
+          .getUnsummarizedMessages(sessionId);
 
       final apiUrl = dotenv.env['NEXT_API_URL'];
       if (apiUrl == null) throw Exception('NEXT_API_URL is not set in .env');
@@ -47,40 +57,44 @@ class ChatService {
       final apiKey = dotenv.env['API_SECRET_KEY'];
       if (apiKey == null) throw Exception('API_SECRET_KEY is not set in .env');
 
-      // c. Logika Auto-Summarize (Setiap 5 Pesan)
-      if (unsummarizedMessages.length >= 5) {
+      // c. Logika Auto-Summarize (Setiap 10 Pesan)
+      if (unsummarizedMessages.length >= 10) {
         // Ganti ujung url /chat menjadi /chat/summarize
-        final summarizeUrl = apiUrl.replaceAll(RegExp(r'/chat$'), '/chat/summarize');
-        
+        final summarizeUrl = apiUrl.replaceAll(
+          RegExp(r'/chat$'),
+          '/chat/summarize',
+        );
+
         final summarizeBody = jsonEncode({
           'oldSummary': oldSummary ?? '',
-          'newMessages': unsummarizedMessages.map((m) => {
-            'role': m['role'],
-            'content': m['content']
-          }).toList(),
+          'newMessages': unsummarizedMessages
+              .map((m) => {'role': m['role'], 'content': m['content']})
+              .toList(),
         });
 
         final sumResponse = await client.post(
           Uri.parse(summarizeUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-          },
+          headers: {'Content-Type': 'application/json', 'x-api-key': apiKey},
           body: summarizeBody,
         );
 
         if (sumResponse.statusCode == 200) {
           final sumData = jsonDecode(sumResponse.body);
           final newSummary = sumData['summary'];
-          
+
           if (newSummary != null && newSummary.toString().isNotEmpty) {
             // Update summary di SQLite
             await DatabaseHelper().updateSessionSummary(sessionId, newSummary);
-            
+
             // Tandai pesan-pesan sebagai sudah dirangkum
-            final messageIds = unsummarizedMessages.map((m) => m['id'] as int).toList();
-            await DatabaseHelper().markMessagesAsSummarized(sessionId, messageIds);
-            
+            final messageIds = unsummarizedMessages
+                .map((m) => m['id'] as int)
+                .toList();
+            await DatabaseHelper().markMessagesAsSummarized(
+              sessionId,
+              messageIds,
+            );
+
             // Update state lokal
             oldSummary = newSummary;
             unsummarizedMessages = []; // Kosongkan karena semua sudah dirangkum
@@ -89,10 +103,9 @@ class ChatService {
       }
 
       // d. Lakukan HTTP POST ke Next.js (Chat Utama)
-      final history = unsummarizedMessages.map((m) => {
-        'role': m['role'],
-        'content': m['content']
-      }).toList();
+      final history = unsummarizedMessages
+          .map((m) => {'role': m['role'], 'content': m['content']})
+          .toList();
 
       final requestBody = jsonEncode({
         'message': message,
@@ -104,10 +117,7 @@ class ChatService {
 
       var response = await client.post(
         Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-        },
+        headers: {'Content-Type': 'application/json', 'x-api-key': apiKey},
         body: requestBody,
       );
 
@@ -118,10 +128,7 @@ class ChatService {
           final resolvedUrl = Uri.parse(apiUrl).resolve(redirectUrl);
           response = await client.post(
             resolvedUrl,
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-            },
+            headers: {'Content-Type': 'application/json', 'x-api-key': apiKey},
             body: requestBody,
           );
         }
@@ -135,7 +142,10 @@ class ChatService {
       String aiResponse = '';
       try {
         final jsonResponse = jsonDecode(response.body);
-        aiResponse = jsonResponse['response'] ?? jsonResponse['message'] ?? response.body;
+        aiResponse =
+            jsonResponse['response'] ??
+            jsonResponse['message'] ??
+            response.body;
       } catch (e) {
         // Fallback jika respons berupa teks biasa
         aiResponse = response.body;
