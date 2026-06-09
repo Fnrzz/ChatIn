@@ -13,7 +13,7 @@ class ScreenBackground extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/background.avif'),
+            image: AssetImage('assets/images/background-app.avif'),
             fit: BoxFit.cover,
           ),
         ),
@@ -29,9 +29,7 @@ class ScreenBackground extends StatelessWidget {
               ],
             ),
           ),
-          child: SafeArea(
-            child: child,
-          ),
+          child: SafeArea(child: child),
         ),
       ),
     );
