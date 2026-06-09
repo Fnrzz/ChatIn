@@ -105,6 +105,14 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       await _supabase.auth.signOut();
+      
+      // Fix: Also sign out from Google so it prompts for account next time
+      try {
+        final googleSignIn = GoogleSignIn.instance;
+        await googleSignIn.signOut();
+      } catch (e) {
+        // Ignore Google sign out errors if not previously signed in with Google
+      }
     } catch (e) {
       rethrow;
     } finally {

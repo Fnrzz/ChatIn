@@ -79,7 +79,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadSessions() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
-      final sessions = await DatabaseHelper().getSessions(userId);
+      // 1. Tampilkan data lokal secepatnya
+      var sessions = await DatabaseHelper().getSessions(userId);
+      if (mounted) {
+        setState(() {
+          _sessions = sessions;
+        });
+      }
+      
+      // 2. Sinkronkan dari Cloud, lalu refresh jika ada perubahan
+      await _chatService.syncFromCloud(userId);
+      sessions = await DatabaseHelper().getSessions(userId);
       if (mounted) {
         setState(() {
           _sessions = sessions;

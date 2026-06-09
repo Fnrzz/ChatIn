@@ -282,18 +282,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // Add user message
       _messages.add(ChatMessage(content: text.trim(), isUser: true));
 
-      // Otomatisasi Judul Offline: Jika ini pesan pertama pengguna
-      if (_messages.length == 1) {
-        final words = text.trim().split(RegExp(r'\s+'));
-        if (words.length > 5) {
-          _conversationTitle = '${words.take(5).join(' ')}...';
-        } else {
-          _conversationTitle = words.join(' ');
-        }
-        // Update di SQLite
-        DatabaseHelper().updateSessionTitle(_sessionId!, _conversationTitle);
-      }
-
+      // Hapus otomatisasi judul offline di sini karena kita akan menggunakan AI di onDone
       _isGenerating = true;
     });
 
@@ -324,11 +313,27 @@ class _ChatScreenState extends State<ChatScreen> {
         });
         _scrollToBottom();
       },
-      onDone: () {
-        setState(() {
-          _isGenerating = false;
-        });
-        _scrollToBottom();
+      onDone: () async {
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+          _scrollToBottom();
+          
+          // Trigger AI Title Generation jika ini adalah percakapan pertama (1 user + 1 AI = 2 pesan)
+          // dan judul masih berupa default 'New Chat'
+          if (_messages.length == 2 && _conversationTitle == 'New Chat' && _sessionId != null) {
+            final userMsg = _messages[0].content;
+            final aiMsg = _messages[1].content;
+            
+            final newTitle = await _chatService.generateSessionTitle(_sessionId!, userMsg, aiMsg);
+            if (newTitle != null && mounted) {
+              setState(() {
+                _conversationTitle = newTitle;
+              });
+            }
+          }
+        }
       },
       onError: (error) {
         setState(() {
@@ -378,6 +383,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (confirm == true) {
       await DatabaseHelper().deleteSession(_sessionId!);
+      try {
+        await Supabase.instance.client.from('chat_sessions').delete().eq('id', _sessionId!);
+      } catch (_) {}
+      
       if (mounted) {
         Navigator.pop(context); // Go back to previous screen
       }
