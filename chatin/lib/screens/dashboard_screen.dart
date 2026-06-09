@@ -24,6 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Map<String, dynamic>> _sessions = [];
   List<Map<String, dynamic>> _agents = [];
   bool _isLoadingAgents = true;
+  double _logoTurns = 0.0;
   final ChatService _chatService = ChatService();
 
   // Daftar warna preset untuk AgentCard
@@ -137,6 +138,129 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return 'Halo $agentName, saya butuh bantuan Anda.';
   }
 
+  void _showSettingsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      // Animasi BottomSheet bawaan Flutter sudah sangat smooth,
+      // kita gunakan custom transition jika diperlukan, tapi defaultnya sudah bagus.
+      builder: (BuildContext context) {
+        return Material(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              // Drag Handle
+              Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Pengaturan',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E1E1E),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildSettingsTile(
+                icon: Icons.person_outline_rounded,
+                title: 'Akun / Profil',
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Menu Profil belum tersedia')),
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                icon: Icons.color_lens_outlined,
+                title: 'Tampilan (Theme)',
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Menu Tema belum tersedia')),
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                icon: Icons.info_outline_rounded,
+                title: 'Tentang Aplikasi',
+                onTap: () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      title: const Text('Tentang ChatIn'),
+                      content: const Text('ChatIn v1.0.0\nDibangun menggunakan Flutter dan Supabase.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: const Color(0xFF1E1E1E), size: 24),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF1E1E1E),
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const darkGrey = Color(0xFF1E1E1E);
@@ -153,17 +277,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E1E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.filter_vintage,
-                      color: Colors.white,
-                      size: 24,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _logoTurns += 1.0; // Berputar 1x putaran penuh (360 derajat)
+                      });
+                      _showSettingsBottomSheet(context);
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E1E1E),
+                        shape: BoxShape.circle,
+                      ),
+                      child: AnimatedRotation(
+                        turns: _logoTurns,
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeOutBack, // Memberikan efek memantul di akhir putaran
+                        child: const Icon(
+                          Icons.filter_vintage,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
                     ),
                   ),
                   IconButton(

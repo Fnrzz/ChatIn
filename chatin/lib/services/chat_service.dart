@@ -64,7 +64,7 @@ class ChatService {
     try {
       final userCreatedAt = DateTime.now().millisecondsSinceEpoch;
       // a. Simpan pesan user ke SQLite
-      await DatabaseHelper().insertMessage(sessionId, 'user', message);
+      await DatabaseHelper().insertMessage(sessionId, 'user', message, userCreatedAt);
 
       // Sinkronisasi pesan user ke Supabase
       try {
@@ -210,7 +210,7 @@ class ChatService {
       final aiCreatedAt = DateTime.now().millisecondsSinceEpoch;
 
       // Insert AI response to SQLite (default is_summarized = 0)
-      await DatabaseHelper().insertMessage(sessionId, 'assistant', aiResponse);
+      await DatabaseHelper().insertMessage(sessionId, 'assistant', aiResponse, aiCreatedAt);
 
       // Insert AI response to Supabase
       try {

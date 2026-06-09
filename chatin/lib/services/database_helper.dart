@@ -116,7 +116,7 @@ class DatabaseHelper {
   // CRUD chat_messages
   // ==========================================
 
-  Future<void> insertMessage(String sessionId, String role, String content) async {
+  Future<void> insertMessage(String sessionId, String role, String content, [int? createdAt]) async {
     final db = await database;
     await db.insert(
       'chat_messages',
@@ -124,7 +124,7 @@ class DatabaseHelper {
         'session_id': sessionId,
         'role': role,
         'content': content,
-        'created_at': DateTime.now().millisecondsSinceEpoch,
+        'created_at': createdAt ?? DateTime.now().millisecondsSinceEpoch,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

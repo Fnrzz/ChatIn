@@ -19,25 +19,30 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { message } = body;
+    // Mendukung 'userMessage' dan 'aiMessage' (dari Flutter) atau 'message' sebagai fallback
+    const userMessage = body.userMessage || body.message;
+    const aiMessage = body.aiMessage || "";
 
-    if (!message) {
+    if (!userMessage) {
       return NextResponse.json(
-        { error: "Message is required" },
+        { error: "User message is required" },
         { status: 400 },
       );
     }
 
     // Call Sumopod Chat API to generate a title
     const chatModel = process.env.SUMOPOD_CHAT_MODEL || "gpt-3.5-turbo";
+    
+    const promptContent = `Generate a short, concise title (maximum 5 words) that summarizes the following conversation. Do not include quotation marks or phrases like 'Title:' in the output. Just return the raw title string.\n\nUser: ${userMessage}${aiMessage ? `\nAI: ${aiMessage}` : ''}`;
+
     const response = await sumopod.chat.completions.create({
       model: chatModel,
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant. Generate a short, concise title (maximum 5 words) that summarizes the user's message. Do not include quotation marks or phrases like 'Title:' in the output. Just return the raw title string.",
+          content: "You are a helpful assistant that generates short, concise titles for chat conversations.",
         },
-        { role: "user", content: message },
+        { role: "user", content: promptContent },
       ],
       temperature: 0.7,
       max_tokens: 500,

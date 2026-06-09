@@ -320,9 +320,8 @@ class _ChatScreenState extends State<ChatScreen> {
           });
           _scrollToBottom();
           
-          // Trigger AI Title Generation jika ini adalah percakapan pertama (1 user + 1 AI = 2 pesan)
-          // dan judul masih berupa default 'New Chat'
-          if (_messages.length == 2 && _conversationTitle == 'New Chat' && _sessionId != null) {
+          // Trigger AI Title Generation jika judul masih berupa default 'New Chat' dan sudah ada balasan
+          if (_conversationTitle == 'New Chat' && _sessionId != null && _messages.length >= 2) {
             final userMsg = _messages[0].content;
             final aiMsg = _messages[1].content;
             
