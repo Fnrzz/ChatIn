@@ -55,6 +55,7 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return StatefulBuilder(
           builder: (context, setModalState) {
             return DraggableScrollableSheet(
@@ -63,10 +64,10 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
               maxChildSize: 0.9,
               builder: (context, scrollController) {
                 return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                    boxShadow: [
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
                         blurRadius: 20,
@@ -82,18 +83,18 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                         width: 48,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       const SizedBox(height: 16),
                       // Title
-                      const Text(
+                      Text(
                         'Pilih Agen',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: isDark ? Colors.white : Colors.black87,
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -122,13 +123,13 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFFFFF9E6)
-                                      : Colors.white,
+                                      ? (isDark ? const Color(0xFF3A3100) : const Color(0xFFFFF9E6))
+                                      : (isDark ? Colors.grey.shade900 : Colors.white),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: isSelected
                                         ? const Color(0xFFFFD500)
-                                        : Colors.grey.shade200,
+                                        : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
                                     width: isSelected ? 2 : 1,
                                   ),
                                   boxShadow: [
@@ -154,14 +155,14 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                                       decoration: BoxDecoration(
                                         color: isSelected
                                             ? const Color(0xFFFFD500).withOpacity(0.2)
-                                            : Colors.grey.shade100,
+                                            : (isDark ? Colors.grey.shade800 : Colors.grey.shade100),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
                                         icon,
                                         color: isSelected
-                                            ? const Color(0xFFB39500) // Darker yellow for contrast
-                                            : Colors.grey.shade600,
+                                            ? const Color(0xFFFFD500) // Yellow for contrast
+                                            : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                                         size: 24,
                                       ),
                                     ),
@@ -178,7 +179,7 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                                               fontWeight: isSelected
                                                   ? FontWeight.bold
                                                   : FontWeight.w600,
-                                              color: Colors.black87,
+                                              color: isDark ? Colors.white : Colors.black87,
                                             ),
                                           ),
                                           if (agent['description'] != null) ...[
@@ -188,7 +189,7 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 color: isSelected
-                                                    ? Colors.black54
+                                                    ? (isDark ? Colors.grey.shade300 : Colors.black54)
                                                     : Colors.grey.shade500,
                                                 height: 1.3,
                                               ),
@@ -227,8 +228,8 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1E1E1E),
-                              foregroundColor: Colors.white,
+                              backgroundColor: const Color(0xFFFFD500),
+                              foregroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
@@ -241,6 +242,7 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.black,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -266,6 +268,7 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayName = widget.currentAgent?['name'] ?? 'Pilih Agen';
     final currentIcon = _getIconForType(widget.currentAgent?['type']);
 
@@ -275,10 +278,10 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: _isOpen ? const Color(0xFFFFD500) : Colors.black.withOpacity(0.08),
+            color: _isOpen ? const Color(0xFFFFD500) : (isDark ? Colors.grey.shade800 : Colors.black.withOpacity(0.08)),
             width: 1.5,
           ),
           boxShadow: [
@@ -295,16 +298,16 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
             Icon(
               currentIcon,
               size: 18,
-              color: const Color(0xFFB39500),
+              color: const Color(0xFFFFD500),
             ),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 displayName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: isDark ? Colors.white : Colors.black87,
                   letterSpacing: -0.3,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -314,10 +317,10 @@ class _AgentSelectorState extends State<AgentSelector> with SingleTickerProvider
             AnimatedRotation(
               turns: _isOpen ? 0.5 : 0.0,
               duration: const Duration(milliseconds: 200),
-              child: const Icon(
+              child: Icon(
                 Icons.keyboard_arrow_down,
                 size: 20,
-                color: Colors.black54,
+                color: isDark ? Colors.grey.shade300 : Colors.black54,
               ),
             ),
           ],

@@ -7,6 +7,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ScreenBackground(
       child: Padding(
         padding: const EdgeInsets.only(
@@ -22,7 +24,7 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: isDark ? Colors.grey.shade900 : const Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -47,13 +49,13 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Empower Your Chats with Agent-Based AI',
               style: TextStyle(
                 fontSize: 40,
                 height: 1.1,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: isDark ? Colors.white : Colors.black,
                 letterSpacing: -1.0,
               ),
             ),

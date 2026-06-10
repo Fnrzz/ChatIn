@@ -16,6 +16,8 @@ class AgentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: 260,
       height: 300, // Card lebih memanjang ke bawah
@@ -29,10 +31,10 @@ class AgentCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 26, // Ukuran font judul sedikit lebih besar
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: isDark ? Colors.white : Colors.black,
               height: 1.1,
             ),
           ),
@@ -41,10 +43,10 @@ class AgentCard extends StatelessWidget {
             child: SingleChildScrollView(
               child: Text(
                 category,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18, // Ukuran font deskripsi lebih besar lagi
                   fontWeight: FontWeight.w600, // Semibold
-                  color: Colors.black87,
+                  color: isDark ? Colors.white70 : Colors.black87,
                   height: 1.4,
                 ),
               ),
@@ -57,16 +59,16 @@ class AgentCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFFFFD500) : Colors.white,
                 borderRadius: BorderRadius.circular(24),
               ),
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Chat with agent',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: isDark ? Colors.black : Colors.black,
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

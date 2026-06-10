@@ -69,8 +69,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     const primaryYellow = Color(0xFFFFD500);
     const darkGrey = Color(0xFF1E1E1E);
+    final textColor = isDark ? Colors.white : darkGrey;
 
     return ScreenBackground(
       child: Padding(
@@ -84,17 +86,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Ikon / Logo
-                  const Icon(Icons.filter_vintage, size: 60, color: darkGrey),
+                  Icon(Icons.filter_vintage, size: 60, color: textColor),
                   const SizedBox(height: 20),
                   
                   // Judul
-                  const Text(
+                  Text(
                     'Create Account',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: darkGrey,
+                      color: textColor,
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -111,18 +113,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Input Form: Name
                   TextFormField(
                     controller: _nameController,
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? Colors.grey.shade900 : Colors.white,
                       labelText: 'Name',
                       labelStyle: const TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.person_outline, color: darkGrey),
+                      prefixIcon: Icon(Icons.person_outline, color: textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: darkGrey, width: 2),
+                        borderSide: BorderSide(color: textColor, width: 2),
                       ),
                     ),
                     validator: (value) {
@@ -137,18 +141,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Input Form: Email
                   TextFormField(
                     controller: _emailController,
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? Colors.grey.shade900 : Colors.white,
                       labelText: 'Email',
                       labelStyle: const TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.email_outlined, color: darkGrey),
+                      prefixIcon: Icon(Icons.email_outlined, color: textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: darkGrey, width: 2),
+                        borderSide: BorderSide(color: textColor, width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -168,12 +174,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? Colors.grey.shade900 : Colors.white,
                       labelText: 'Password',
                       labelStyle: const TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.lock_outline, color: darkGrey),
+                      prefixIcon: Icon(Icons.lock_outline, color: textColor),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -187,10 +194,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: darkGrey, width: 2),
+                        borderSide: BorderSide(color: textColor, width: 2),
                       ),
                     ),
                     validator: (value) {
@@ -251,14 +259,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       );
                     },
                     child: RichText(
-                      text: const TextSpan(
+                      text: TextSpan(
                         text: "Already have an account? ",
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                        style: const TextStyle(color: Colors.grey, fontSize: 16),
                         children: [
                           TextSpan(
                             text: 'Login',
                             style: TextStyle(
-                              color: darkGrey,
+                              color: textColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

@@ -65,6 +65,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ScreenBackground(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,8 +81,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Container(
                     width: 44,
                     height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E1E),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey.shade900 : const Color(0xFF1E1E1E),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -91,12 +93,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Text(
+                Text(
                   'All Chat History',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: isDark ? Colors.white : Colors.black,
                     letterSpacing: -0.5,
                   ),
                 ),

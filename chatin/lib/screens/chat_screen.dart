@@ -406,6 +406,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return PopScope(
       canPop: !_isGenerating,
       onPopInvokedWithResult: (didPop, result) {
@@ -419,11 +421,11 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F0E8), // Cream background like design
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF5F0E8), // True black or Cream
         body: Column(
           children: [
-            // ── Top Section (cream background) ──
-            _buildTopBar(),
+            // ── Top Section ──
+            _buildTopBar(isDark),
 
             // ── Chat Area (dark background) ──
             Expanded(child: _buildChatArea()),
@@ -443,7 +445,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isDark) {
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -550,10 +552,10 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
                 _conversationTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: isDark ? Colors.white : Colors.black,
                   height: 1.15,
                   letterSpacing: -0.5,
                 ),

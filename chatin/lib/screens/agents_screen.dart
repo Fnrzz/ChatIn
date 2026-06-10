@@ -60,6 +60,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ScreenBackground(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,8 +76,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   child: Container(
                     width: 44,
                     height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E1E),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey.shade900 : const Color(0xFF1E1E1E),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -86,12 +88,12 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Text(
+                Text(
                   'All Agents',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: isDark ? Colors.white : Colors.black,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -122,7 +124,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                           final agent = _agents[index];
                           final name = agent['name'] as String? ?? 'Agent';
                           final desc = agent['description'] as String? ?? 'Assistant';
-                          final bgColor = _agentColors[index % _agentColors.length];
+                          final baseColor = _agentColors[index % _agentColors.length];
+                          final bgColor = isDark ? Color.lerp(baseColor, Colors.black, 0.4)! : baseColor;
 
                           return GestureDetector(
                             onTap: () async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
 import 'chat_screen.dart';
 import 'history_screen.dart';
 import 'agents_screen.dart';
@@ -61,7 +62,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
-  /// Subscribe to realtime changes on the 'agents' table
   void _subscribeToAgents() {
     _agentsChannel = Supabase.instance.client
         .channel('public:agents')
@@ -80,7 +80,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadSessions() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
-      // 1. Tampilkan data lokal secepatnya
       var sessions = await DatabaseHelper().getSessions(userId);
       if (mounted) {
         setState(() {
@@ -88,7 +87,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         });
       }
       
-      // 2. Sinkronkan dari Cloud, lalu refresh jika ada perubahan
       await _chatService.syncFromCloud(userId);
       sessions = await DatabaseHelper().getSessions(userId);
       if (mounted) {
@@ -133,21 +131,203 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Generate initial message based on agent name
   String _generateInitialMessage(String agentName) {
     return 'Halo $agentName, saya butuh bantuan Anda.';
   }
 
+  void _showThemeDialog(BuildContext context) {
+    final themeProvider = context.read<ThemeProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final activeColor = const Color(0xFFFFD500);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final currentMode = themeProvider.themeMode;
+            
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.palette_outlined,
+                      size: 48,
+                      color: activeColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Pilih Tema',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sesuaikan tampilan aplikasi dengan gaya Anda.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildThemeOption(
+                      title: 'Sistem (Default)',
+                      icon: Icons.settings_system_daydream_outlined,
+                      mode: ThemeMode.system,
+                      currentMode: currentMode,
+                      textColor: textColor,
+                      activeColor: activeColor,
+                      onTap: (mode) {
+                        themeProvider.setThemeMode(mode);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildThemeOption(
+                      title: 'Terang (Light)',
+                      icon: Icons.light_mode_outlined,
+                      mode: ThemeMode.light,
+                      currentMode: currentMode,
+                      textColor: textColor,
+                      activeColor: activeColor,
+                      onTap: (mode) {
+                        themeProvider.setThemeMode(mode);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildThemeOption(
+                      title: 'Gelap (Dark)',
+                      icon: Icons.dark_mode_outlined,
+                      mode: ThemeMode.dark,
+                      currentMode: currentMode,
+                      textColor: textColor,
+                      activeColor: activeColor,
+                      onTap: (mode) {
+                        themeProvider.setThemeMode(mode);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text(
+                        'Tutup',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption({
+    required String title,
+    required IconData icon,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required Color textColor,
+    required Color activeColor,
+    required Function(ThemeMode) onTap,
+  }) {
+    final isSelected = mode == currentMode;
+    return GestureDetector(
+      onTap: () => onTap(mode),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withOpacity(0.1) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.grey.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? activeColor : Colors.grey,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? textColor : Colors.grey.shade600,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: activeColor,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showSettingsBottomSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // Animasi BottomSheet bawaan Flutter sudah sangat smooth,
-      // kita gunakan custom transition jika diperlukan, tapi defaultnya sudah bagus.
       builder: (BuildContext context) {
         return Material(
-          color: Colors.white,
+          color: bgColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(32),
             topRight: Radius.circular(32),
@@ -161,13 +341,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -175,7 +355,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E1E1E),
+                      color: textColor,
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -183,6 +363,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 16),
               _buildSettingsTile(
+                context,
                 icon: Icons.person_outline_rounded,
                 title: 'Akun / Profil',
                 onTap: () {
@@ -193,16 +374,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               _buildSettingsTile(
+                context,
                 icon: Icons.color_lens_outlined,
                 title: 'Tampilan (Theme)',
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Menu Tema belum tersedia')),
-                  );
+                  _showThemeDialog(context);
                 },
               ),
               _buildSettingsTile(
+                context,
                 icon: Icons.info_outline_rounded,
                 title: 'Tentang Aplikasi',
                 onTap: () {
@@ -210,15 +391,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
+                      backgroundColor: bgColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      title: const Text('Tentang ChatIn'),
-                      content: const Text('ChatIn v1.0.0\nDibangun menggunakan Flutter dan Supabase.'),
+                      title: Text('Tentang ChatIn', style: TextStyle(color: textColor)),
+                      content: Text('ChatIn v1.0.0\nDibangun menggunakan Flutter dan Supabase.', style: TextStyle(color: textColor)),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Tutup'),
+                          child: Text('Tutup', style: TextStyle(color: textColor)),
                         ),
                       ],
                     ),
@@ -233,27 +415,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSettingsTile({
+  Widget _buildSettingsTile(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final iconBgColor = isDark ? Colors.grey.shade800 : Colors.grey.shade100;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: iconBgColor,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: const Color(0xFF1E1E1E), size: 24),
+        child: Icon(icon, color: textColor, size: 24),
       ),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1E1E1E),
+          color: textColor,
         ),
       ),
       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
@@ -263,8 +450,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const darkGrey = Color(0xFF1E1E1E);
-    const primaryYellow = Color(0xFFFFD500);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryYellow = const Color(0xFFFFD500);
+    final textColor = isDark ? Colors.white : Colors.black;
 
     return ScreenBackground(
       child: SingleChildScrollView(
@@ -280,21 +468,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        _logoTurns += 1.0; // Berputar 1x putaran penuh (360 derajat)
+                        _logoTurns += 1.0; 
                       });
                       _showSettingsBottomSheet(context);
                     },
                     child: Container(
                       width: 48,
                       height: 48,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1E1E1E),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey.shade900 : const Color(0xFF1E1E1E),
                         shape: BoxShape.circle,
+                        border: Border.all(color: isDark ? Colors.grey.shade700 : Colors.transparent),
                       ),
                       child: AnimatedRotation(
                         turns: _logoTurns,
                         duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeOutBack, // Memberikan efek memantul di akhir putaran
+                        curve: Curves.easeOutBack, 
                         child: const Icon(
                           Icons.filter_vintage,
                           color: Colors.white,
@@ -312,15 +501,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            backgroundColor: Colors.white,
+                            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            title: const Text(
+                            title: Text(
                               'Logout',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E1E1E),
+                                color: textColor,
                                 fontSize: 24,
                                 letterSpacing: -0.5,
                               ),
@@ -393,10 +582,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // Main Title
               Text(
                 'Ready to start a session?',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: textColor,
                   height: 1.1,
                   letterSpacing: -1.0,
                 ),
@@ -439,8 +628,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Container(
                           width: 48,
                           height: 48,
-                          decoration: const BoxDecoration(
-                            color: darkGrey,
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.grey.shade900 : const Color(0xFF1E1E1E),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -560,7 +749,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       builder: (context) => const AgentsScreen(),
                     ),
                   );
-                  // Reload sessions if the user started a chat from the Agents screen
                   if (shouldReload == true) {
                     _loadSessions();
                   }
@@ -568,11 +756,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Popular Agent Cards (Horizontal Scroll)
+              // Popular Agent Cards
               if (_isLoadingAgents)
-                const Center(
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    padding: const EdgeInsets.symmetric(vertical: 32.0),
                     child: CircularProgressIndicator(color: primaryYellow),
                   ),
                 )
@@ -594,9 +782,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       final agent = entry.value;
 
                       final name = agent['name'] as String? ?? 'Agent';
-                      final desc =
-                          agent['description'] as String? ?? 'Assistant';
-                      final bgColor = _agentColors[index % _agentColors.length];
+                      final desc = agent['description'] as String? ?? 'Assistant';
+                      final baseColor = _agentColors[index % _agentColors.length];
+                      final bgColor = isDark ? Color.lerp(baseColor, Colors.black, 0.4)! : baseColor;
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 16.0),
