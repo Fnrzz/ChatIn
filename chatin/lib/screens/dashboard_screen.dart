@@ -600,7 +600,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 16.0),
-                        child: GestureDetector(
+                        child: AgentCard(
+                          title: name,
+                          category: desc,
+                          backgroundColor: bgColor,
                           onTap: () async {
                             await Navigator.push(
                               context,
@@ -614,11 +617,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             );
                             _loadSessions();
                           },
-                          child: AgentCard(
-                            title: name,
-                            category: desc,
-                            backgroundColor: bgColor,
-                          ),
                         ),
                       );
                     }).toList(),

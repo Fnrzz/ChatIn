@@ -453,7 +453,6 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             // Row: Back, Model Selector, Compose
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Back button
                 GestureDetector(
@@ -483,67 +482,64 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                 ),
-                // Right controls: Agent Selector and Compose button
-                Flexible(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Flexible(
-                        child: AgentSelector(
-                          agents: _agents,
-                          currentAgent: _selectedAgent,
-                          onAgentChanged: _onAgentChanged,
-                        ),
+                const SizedBox(width: 8),
+                // Agent Selector (takes available space flexibly)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: AgentSelector(
+                      agents: _agents,
+                      currentAgent: _selectedAgent,
+                      onAgentChanged: _onAgentChanged,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Delete button
+                if (_sessionId != null) ...[
+                  GestureDetector(
+                    onTap: _deleteCurrentSession,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E1E1E),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 8),
-                      if (_sessionId != null) ...[
-                        GestureDetector(
-                          onTap: _deleteCurrentSession,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1E1E1E),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      // Compose button
-                      GestureDetector(
-                        onTap: () {
-                          // New chat action
-                          _chatSubscription?.cancel();
-                          setState(() {
-                            _messages.clear();
-                            _conversationTitle = 'New Chat';
-                            _isGenerating = false;
-                            _sessionId = null;
-                          });
-                          _initSession();
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF1E1E1E),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit_outlined,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 20,
                       ),
-                    ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                // Compose button
+                GestureDetector(
+                  onTap: () {
+                    // New chat action
+                    _chatSubscription?.cancel();
+                    setState(() {
+                      _messages.clear();
+                      _conversationTitle = 'New Chat';
+                      _isGenerating = false;
+                      _sessionId = null;
+                    });
+                    _initSession();
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1E1E1E),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],

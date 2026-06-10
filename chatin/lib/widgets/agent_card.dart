@@ -4,12 +4,14 @@ class AgentCard extends StatelessWidget {
   final String title;
   final String category;
   final Color backgroundColor;
+  final VoidCallback? onTap;
 
   const AgentCard({
     super.key,
     required this.title,
     required this.category,
     required this.backgroundColor,
+    this.onTap,
   });
 
   @override
@@ -49,20 +51,23 @@ class AgentCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            alignment: Alignment.center,
-            child: const Text(
-              'Chat with agent',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Chat with agent',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
