@@ -8,7 +8,7 @@ class ScreenBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       body: Stack(
@@ -16,7 +16,7 @@ class ScreenBackground extends StatelessWidget {
           // Smooth Image Transition
           Positioned.fill(
             child: Image.asset(
-              'assets/images/background-app.avif',
+              'assets/images/background-app.webp',
               fit: BoxFit.cover,
             ),
           ),
@@ -25,12 +25,12 @@ class ScreenBackground extends StatelessWidget {
               opacity: isDark ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 500),
               child: Image.asset(
-                'assets/images/background-app-dark.avif',
+                'assets/images/background-app-dark.webp',
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          
+
           // Smooth Gradient Transition
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
@@ -40,7 +40,7 @@ class ScreenBackground extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: isDark 
+                colors: isDark
                     ? [
                         Colors.black.withOpacity(0.0),
                         Colors.black.withOpacity(0.8),
