@@ -4,13 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:uuid/uuid.dart';
-import 'database_helper.dart';
 import '../utils/encryption_helper.dart';
 
 class ChatService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  // Supabase hanya digunakan untuk mengambil data agent
+  // Mengambil data agent
   Future<List<Map<String, dynamic>>> getAgents() async {
     final data = await _supabase
         .from('agents')
@@ -19,7 +18,43 @@ class ChatService {
     return List<Map<String, dynamic>>.from(data);
   }
 
-  // Membuat sesi baru di SQLite dan Supabase
+  // Mengambil semua sesi untuk user tertentu dari Supabase
+  Future<List<Map<String, dynamic>>> getSessions(String userId) async {
+    final data = await _supabase
+        .from('chat_sessions')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  // Mengambil pesan untuk sesi tertentu dari Supabase dan mendekripsinya
+  Future<List<Map<String, dynamic>>> getSessionMessages(String sessionId) async {
+    final data = await _supabase
+        .from('chat_messages')
+        .select()
+        .eq('session_id', sessionId)
+        .order('created_at', ascending: true);
+        
+    final List<Map<String, dynamic>> messages = [];
+    for (var msg in data) {
+      final decryptedContent = EncryptionHelper.decryptText(msg['content'] ?? '');
+      messages.add({
+        ...msg,
+        'content': decryptedContent,
+      });
+    }
+    return messages;
+  }
+
+  // Menghapus sesi
+  Future<void> deleteSession(String sessionId) async {
+    // Jika Supabase tidak mengatur ON DELETE CASCADE, kita juga bisa menghapus pesan secara eksplisit
+    await _supabase.from('chat_messages').delete().eq('session_id', sessionId);
+    await _supabase.from('chat_sessions').delete().eq('id', sessionId);
+  }
+
+  // Membuat sesi baru di Supabase
   Future<String> createNewSession(String agentId) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -29,32 +64,19 @@ class ChatService {
     final sessionId = const Uuid().v4();
     final createdAt = DateTime.now().millisecondsSinceEpoch;
 
-    // 1. Simpan ke SQLite lokal
-    await DatabaseHelper().createSession(
-      sessionId,
-      agentId,
-      'New Chat',
-      userId,
-    );
-
-    // 2. Sinkronisasi ke Supabase (Latar belakang, tidak perlu await penuh jika ingin cepat, tapi kita await untuk pastikan)
-    try {
-      await _supabase.from('chat_sessions').insert({
-        'id': sessionId,
-        'agent_id': agentId,
-        'title': 'New Chat',
-        'user_id': userId,
-        'created_at': createdAt,
-        'summary': null,
-      });
-    } catch (e) {
-      print('Failed to sync new session to Supabase: $e');
-    }
+    await _supabase.from('chat_sessions').insert({
+      'id': sessionId,
+      'agent_id': agentId,
+      'title': 'New Chat',
+      'user_id': userId,
+      'created_at': createdAt,
+      'summary': null,
+    });
 
     return sessionId;
   }
 
-  // Mengirim pesan dan menyimpan ke SQLite & Supabase
+  // Mengirim pesan dan menyimpan hanya ke Supabase
   Stream<String> sendMessage(
     String message,
     String sessionId,
@@ -63,26 +85,39 @@ class ChatService {
     final client = http.Client();
     try {
       final userCreatedAt = DateTime.now().millisecondsSinceEpoch;
-      // a. Simpan pesan user ke SQLite
-      await DatabaseHelper().insertMessage(sessionId, 'user', message, userCreatedAt);
 
-      // Sinkronisasi pesan user ke Supabase
-      try {
-        await _supabase.from('chat_messages').insert({
-          'session_id': sessionId,
-          'role': 'user',
-          'content': EncryptionHelper.encryptText(message), // ENKRIPSI
-          'is_summarized': 0,
-          'created_at': userCreatedAt,
+      // a. Sinkronisasi pesan user ke Supabase (ENKRIPSI)
+      await _supabase.from('chat_messages').insert({
+        'session_id': sessionId,
+        'role': 'user',
+        'content': EncryptionHelper.encryptText(message),
+        'is_summarized': 0,
+        'created_at': userCreatedAt,
+      });
+
+      // b. Tarik Data Sesi dan Pesan yang Belum Dirangkum dari Supabase
+      final sessionData = await _supabase
+          .from('chat_sessions')
+          .select('summary')
+          .eq('id', sessionId)
+          .maybeSingle();
+      
+      String? oldSummary = sessionData != null ? sessionData['summary'] as String? : null;
+
+      final unsummarizedData = await _supabase
+          .from('chat_messages')
+          .select()
+          .eq('session_id', sessionId)
+          .eq('is_summarized', 0)
+          .order('created_at', ascending: true);
+
+      List<Map<String, dynamic>> unsummarizedMessages = [];
+      for (var msg in unsummarizedData) {
+        unsummarizedMessages.add({
+          ...msg,
+          'content': EncryptionHelper.decryptText(msg['content'] ?? ''),
         });
-      } catch (e) {
-        print('Failed to sync user message to Supabase: $e');
       }
-
-      // b. Tarik Data & Cek Batas (Threshold) untuk Rolling Summary
-      String? oldSummary = await DatabaseHelper().getSessionSummary(sessionId);
-      List<Map<String, dynamic>> unsummarizedMessages = await DatabaseHelper()
-          .getUnsummarizedMessages(sessionId);
 
       final apiUrl = dotenv.env['NEXT_API_URL'];
       if (apiUrl == null) throw Exception('NEXT_API_URL is not set in .env');
@@ -92,7 +127,6 @@ class ChatService {
 
       // c. Logika Auto-Summarize (Setiap 10 Pesan)
       if (unsummarizedMessages.length >= 10) {
-        // Ganti ujung url /chat menjadi /chat/summarize
         final summarizeUrl = apiUrl.replaceAll(
           RegExp(r'/chat$'),
           '/chat/summarize',
@@ -116,40 +150,22 @@ class ChatService {
           final newSummary = sumData['summary'];
 
           if (newSummary != null && newSummary.toString().isNotEmpty) {
-            // Update summary di SQLite
-            await DatabaseHelper().updateSessionSummary(sessionId, newSummary);
-
             // Update summary di Supabase
-            try {
-              await _supabase
-                  .from('chat_sessions')
-                  .update({'summary': newSummary})
-                  .eq('id', sessionId);
-            } catch (e) {
-              print('Failed to sync session summary to Supabase: $e');
-            }
-
-            // Tandai pesan-pesan sebagai sudah dirangkum di SQLite
-            final messageIds = unsummarizedMessages
-                .map((m) => m['id'] as int)
-                .toList();
-            await DatabaseHelper().markMessagesAsSummarized(
-              sessionId,
-              messageIds,
-            );
+            await _supabase
+                .from('chat_sessions')
+                .update({'summary': newSummary})
+                .eq('id', sessionId);
 
             // Tandai pesan-pesan sebagai sudah dirangkum di Supabase
-            try {
+            final messageIds = unsummarizedMessages.map((m) => m['id']).toList();
+            if (messageIds.isNotEmpty) {
               await _supabase
                   .from('chat_messages')
                   .update({'is_summarized': 1})
-                  .eq('session_id', sessionId)
-                  .eq('is_summarized', 0);
-            } catch (e) {
-              print('Failed to sync is_summarized to Supabase: $e');
+                  .inFilter('id', messageIds);
             }
 
-            // Update state lokal
+            // Update state lokal untuk dikirim ke chat utama
             oldSummary = newSummary;
             unsummarizedMessages = []; // Kosongkan karena semua sudah dirangkum
           }
@@ -175,7 +191,6 @@ class ChatService {
         body: requestBody,
       );
 
-      // Jika server redirect (307/308), ikuti redirect secara manual
       if (response.statusCode == 307 || response.statusCode == 308) {
         final redirectUrl = response.headers['location'];
         if (redirectUrl != null) {
@@ -192,7 +207,7 @@ class ChatService {
         throw Exception('Server error: ${response.statusCode}');
       }
 
-      // e. Simpan jawaban AI (aiResponse) ke SQLite
+      // e. Simpan jawaban AI (aiResponse) ke Supabase
       String aiResponse = '';
       try {
         final jsonResponse = jsonDecode(response.body);
@@ -201,7 +216,6 @@ class ChatService {
             jsonResponse['message'] ??
             response.body;
       } catch (e) {
-        // Fallback jika respons berupa teks biasa
         aiResponse = response.body;
       }
 
@@ -209,21 +223,14 @@ class ChatService {
 
       final aiCreatedAt = DateTime.now().millisecondsSinceEpoch;
 
-      // Insert AI response to SQLite (default is_summarized = 0)
-      await DatabaseHelper().insertMessage(sessionId, 'assistant', aiResponse, aiCreatedAt);
-
-      // Insert AI response to Supabase
-      try {
-        await _supabase.from('chat_messages').insert({
-          'session_id': sessionId,
-          'role': 'assistant',
-          'content': EncryptionHelper.encryptText(aiResponse), // ENKRIPSI
-          'is_summarized': 0,
-          'created_at': aiCreatedAt,
-        });
-      } catch (e) {
-        print('Failed to sync AI message to Supabase: $e');
-      }
+      // Insert AI response to Supabase (ENKRIPSI)
+      await _supabase.from('chat_messages').insert({
+        'session_id': sessionId,
+        'role': 'assistant',
+        'content': EncryptionHelper.encryptText(aiResponse),
+        'is_summarized': 0,
+        'created_at': aiCreatedAt,
+      });
 
       // Simulasi streaming ke UI
       final words = aiResponse.split(' ');
@@ -266,16 +273,10 @@ class ChatService {
         final newTitle = data['title'] as String?;
 
         if (newTitle != null && newTitle.isNotEmpty) {
-          // Update di SQLite
-          await DatabaseHelper().updateSessionTitle(sessionId, newTitle);
-          // Update di Supabase
-          try {
-            await _supabase.from('chat_sessions').update({
-              'title': newTitle
-            }).eq('id', sessionId);
-          } catch (e) {
-            print('Failed to sync generated title to Supabase: $e');
-          }
+          // Update di Supabase saja
+          await _supabase.from('chat_sessions').update({
+            'title': newTitle
+          }).eq('id', sessionId);
           return newTitle;
         }
       }
@@ -285,88 +286,5 @@ class ChatService {
       client.close();
     }
     return null;
-  }
-
-  // Tarik data dari Supabase dan simpan ke SQLite lokal
-  Future<void> syncFromCloud(String userId) async {
-    try {
-      // 1. Ambil semua sesi dari Supabase
-      final sessions = await _supabase
-          .from('chat_sessions')
-          .select()
-          .eq('user_id', userId);
-
-      for (var session in sessions) {
-        // Coba insert/replace ke SQLite
-        await DatabaseHelper().createSession(
-          session['id'],
-          session['agent_id'],
-          session['title'],
-          session['user_id'],
-        );
-
-        // Update waktu dan summary agar sesuai dengan cloud
-        if (session['summary'] != null) {
-          await DatabaseHelper().updateSessionSummary(
-            session['id'],
-            session['summary'],
-          );
-        }
-      }
-
-      // 2. Ambil semua pesan dari Supabase
-      // Untuk menghemat bandwidth, kita idealnya hanya mengambil pesan yang belum ada di SQLite
-      // Tapi untuk kemudahan sinkronisasi dasar, kita ambil pesan untuk sesi yang kita miliki
-      if (sessions.isNotEmpty) {
-        final sessionIds = sessions.map((s) => s['id']).toList();
-
-        // Ambil dalam batch jika sangat banyak, atau ambil semua
-        final messages = await _supabase
-            .from('chat_messages')
-            .select()
-            .inFilter('session_id', sessionIds)
-            .order('created_at', ascending: true);
-
-        final db = await DatabaseHelper().database;
-
-        // Kita perlu membersihkan tabel lokal dan menggantinya dengan cloud?
-        // Tidak, jika kita online kita bisa jadikan Cloud sebagai source of truth
-        // Karena ada AUTOINCREMENT di SQLite, replace bisa merusak ID, tapi kita tidak rely pada ID integer SQLite untuk relasi kecuali is_summarized
-        // Jadi kita bisa menggunakan transaction untuk insert pesan yang belum ada
-
-        // Pendekatan paling aman: jika ada pesan di cloud, pastikan masuk SQLite.
-        // Agar tidak duplikat, kita bisa bersihkan chat_messages dan isi ulang (bisa lambat)
-        // ATAU kita bisa check count
-
-        for (var msg in messages) {
-          final decryptedContent = EncryptionHelper.decryptText(msg['content'] ?? ''); // DEKRIPSI
-          
-          // Cari apakah pesan sudah ada berdasarkan session_id, role, content, dan created_at
-          final existing = await db.query(
-            'chat_messages',
-            where:
-                'session_id = ? AND role = ? AND content = ? AND created_at = ?',
-            whereArgs: [
-              msg['session_id'],
-              msg['role'],
-              decryptedContent,
-              msg['created_at'],
-            ],
-          );
-
-          if (existing.isEmpty) {
-            await db.insert('chat_messages', {
-              'session_id': msg['session_id'],
-              'role': msg['role'],
-              'content': decryptedContent,
-              'is_summarized': msg['is_summarized'] ?? 0,
-              'created_at': msg['created_at'],
-            });
-          }
-        }
-      }
-    } catch (e) {
-      print('Failed to sync from cloud: $e');
-    }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/database_helper.dart';
 import '../services/chat_service.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/history_chip.dart';
@@ -26,18 +25,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _loadSessions() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
-      // 1. Tampilkan data lokal secepatnya
-      var sessions = await DatabaseHelper().getSessions(userId);
       if (mounted) {
         setState(() {
-          _sessions = sessions;
-          _isLoading = false;
+          _isLoading = true;
         });
       }
       
-      // 2. Sinkronkan dari Cloud, lalu refresh jika ada perubahan
-      await ChatService().syncFromCloud(userId);
-      sessions = await DatabaseHelper().getSessions(userId);
+      final sessions = await ChatService().getSessions(userId);
+      
       if (mounted) {
         setState(() {
           _sessions = sessions;

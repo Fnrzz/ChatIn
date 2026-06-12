@@ -11,7 +11,6 @@ import '../widgets/screen_background.dart';
 import '../widgets/history_chip.dart';
 import '../widgets/agent_card.dart';
 import '../widgets/section_header.dart';
-import '../services/database_helper.dart';
 import '../services/chat_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -80,15 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadSessions() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
-      var sessions = await DatabaseHelper().getSessions(userId);
-      if (mounted) {
-        setState(() {
-          _sessions = sessions;
-        });
-      }
-      
-      await _chatService.syncFromCloud(userId);
-      sessions = await DatabaseHelper().getSessions(userId);
+      final sessions = await _chatService.getSessions(userId);
       if (mounted) {
         setState(() {
           _sessions = sessions;

@@ -7,7 +7,6 @@ import '../widgets/chat_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/agent_selector.dart';
-import '../services/database_helper.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? sessionId;
@@ -215,11 +214,11 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Load history from SQLite, convert to ChatMessage and set to state
+  // Load history from Supabase, convert to ChatMessage and set to state
   Future<void> _loadLocalHistory() async {
     if (_sessionId == null) return;
     try {
-      final historyData = await DatabaseHelper().getSessionMessages(_sessionId!);
+      final historyData = await _chatService.getSessionMessages(_sessionId!);
       if (mounted) {
         setState(() {
           _messages.clear();
@@ -381,10 +380,11 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     if (confirm == true) {
-      await DatabaseHelper().deleteSession(_sessionId!);
       try {
-        await Supabase.instance.client.from('chat_sessions').delete().eq('id', _sessionId!);
-      } catch (_) {}
+        await _chatService.deleteSession(_sessionId!);
+      } catch (e) {
+        print('Failed to delete session: $e');
+      }
       
       if (mounted) {
         Navigator.pop(context); // Go back to previous screen
