@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import '../widgets/screen_background.dart';
@@ -91,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   
                   // Judul
                   Text(
-                    'Create Account',
+                    'create_account'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 32,
@@ -103,10 +104,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   
                   // Sub-judul
-                  const Text(
-                    'Sign up to get started',
+                  Text(
+                    'sign_up_desc'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 40),
 
@@ -117,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: isDark ? Colors.grey.shade900 : Colors.white,
-                      labelText: 'Name',
+                      labelText: 'name'.tr(),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: Icon(Icons.person_outline, color: textColor),
                       border: OutlineInputBorder(
@@ -131,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                        return 'please_enter_name'.tr();
                       }
                       return null;
                     },
@@ -145,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: isDark ? Colors.grey.shade900 : Colors.white,
-                      labelText: 'Email',
+                      labelText: 'email'.tr(),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: Icon(Icons.email_outlined, color: textColor),
                       border: OutlineInputBorder(
@@ -160,10 +161,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'please_enter_email'.tr();
                       }
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email address';
+                        return 'invalid_email'.tr();
                       }
                       return null;
                     },
@@ -178,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: isDark ? Colors.grey.shade900 : Colors.white,
-                      labelText: 'Password',
+                      labelText: 'password'.tr(),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: Icon(Icons.lock_outline, color: textColor),
                       suffixIcon: IconButton(
@@ -203,10 +204,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'please_enter_password'.tr();
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'password_length'.tr();
                       }
                       return null;
                     },
@@ -236,9 +237,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text(
-                                'Register',
-                                style: TextStyle(
+                            : Text(
+                                'register'.tr(),
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -260,11 +261,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                     child: RichText(
                       text: TextSpan(
-                        text: "Already have an account? ",
+                        text: 'already_have_account'.tr(),
                         style: const TextStyle(color: Colors.grey, fontSize: 16),
                         children: [
                           TextSpan(
-                            text: 'Login',
+                            text: 'login'.tr(),
                             style: TextStyle(
                               color: textColor,
                               fontWeight: FontWeight.bold,
@@ -283,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Or continue with',
+                          'or_continue_with'.tr(),
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       ),
@@ -297,7 +298,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SocialButton(
-                        label: 'Google',
+                        label: 'google'.tr(),
                         iconData: Icons.g_mobiledata,
                         onPressed: _socialLogin,
                       ),

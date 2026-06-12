@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/chat_service.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/agent_card.dart';
@@ -89,7 +90,7 @@ class _AgentsScreenState extends State<AgentsScreen> {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  'All Agents',
+                  'all_agents'.tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -110,10 +111,10 @@ class _AgentsScreenState extends State<AgentsScreen> {
                     child: CircularProgressIndicator(color: Color(0xFFFFD500)),
                   )
                 : _agents.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'No agents available.',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          'no_agents'.tr(),
+                          style: const TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       )
                     : ListView.separated(
@@ -135,7 +136,7 @@ class _AgentsScreenState extends State<AgentsScreen> {
                                   builder: (context) => ChatScreen(
                                     initialAgent: name,
                                     initialMessage: _generateInitialMessage(name),
-                                    conversationTitle: 'Chat with\n$name',
+                                    conversationTitle: 'chat_with'.tr(args: [name]),
                                   ),
                                 ),
                               );

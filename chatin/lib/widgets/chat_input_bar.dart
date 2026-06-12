@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -37,14 +38,14 @@ class ChatInputBar extends StatelessWidget {
                     fontSize: 16,
                     color: Colors.black87,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: 'Type here...',
-                    hintStyle: TextStyle(
+                  decoration: InputDecoration(
+                    hintText: 'type_here'.tr(),
+                    hintStyle: const TextStyle(
                       color: Colors.grey,
                       fontSize: 16,
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 14,
                     ),

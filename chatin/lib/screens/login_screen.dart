@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/auth_provider.dart';
 import 'register_screen.dart';
 import '../widgets/screen_background.dart';
@@ -93,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // Judul
                         Text(
-                          'Welcome Back',
+                          'welcome_back'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 32,
@@ -105,10 +106,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 8),
 
                         // Sub-judul
-                        const Text(
-                          'Sign in to continue chatting',
+                        Text(
+                          'sign_in_desc'.tr(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                         const SizedBox(height: 40),
 
@@ -119,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: isDark ? Colors.grey.shade900 : Colors.white,
-                            labelText: 'Email',
+                            labelText: 'email'.tr(),
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: Icon(
                               Icons.email_outlined,
@@ -140,12 +141,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
+                              return 'please_enter_email'.tr();
                             }
                             if (!RegExp(
                               r'^[^@]+@[^@]+\.[^@]+',
                             ).hasMatch(value)) {
-                              return 'Please enter a valid email address';
+                              return 'invalid_email'.tr();
                             }
                             return null;
                           },
@@ -160,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: isDark ? Colors.grey.shade900 : Colors.white,
-                            labelText: 'Password',
+                            labelText: 'password'.tr(),
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: Icon(
                               Icons.lock_outline,
@@ -193,10 +194,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
+                              return 'please_enter_password'.tr();
                             }
                             if (value.length < 6) {
-                              return 'Password must be at least 6 characters';
+                              return 'password_length'.tr();
                             }
                             return null;
                           },
@@ -226,9 +227,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         strokeWidth: 2.5,
                                       ),
                                     )
-                                  : const Text(
-                                      'Login',
-                                      style: TextStyle(
+                                  : Text(
+                                      'login'.tr(),
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -250,14 +251,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: RichText(
                             text: TextSpan(
-                              text: "Don't have an account? ",
+                              text: 'dont_have_account'.tr(),
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Register',
+                                  text: 'register'.tr(),
                                   style: TextStyle(
                                     color: textColor,
                                     fontWeight: FontWeight.bold,
@@ -278,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 horizontal: 16,
                               ),
                               child: Text(
-                                'Or continue with',
+                                'or_continue_with'.tr(),
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
                             ),
@@ -292,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SocialButton(
-                              label: 'Google',
+                              label: 'google'.tr(),
                               iconData: Icons.g_mobiledata,
                               onPressed: _socialLogin,
                             ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import 'chat_screen.dart';
@@ -307,6 +308,165 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showLanguageDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final activeColor = const Color(0xFFFFD500);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final currentLocale = context.locale;
+            
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.language_outlined,
+                      size: 48,
+                      color: activeColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'language'.tr(),
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildLanguageOption(
+                      title: 'english'.tr(),
+                      icon: Icons.language,
+                      locale: const Locale('en'),
+                      currentLocale: currentLocale,
+                      textColor: textColor,
+                      activeColor: activeColor,
+                      onTap: (locale) {
+                        context.setLocale(locale);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildLanguageOption(
+                      title: 'indonesian'.tr(),
+                      icon: Icons.language,
+                      locale: const Locale('id'),
+                      currentLocale: currentLocale,
+                      textColor: textColor,
+                      activeColor: activeColor,
+                      onTap: (locale) {
+                        context.setLocale(locale);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: Text(
+                        'Tutup',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required String title,
+    required IconData icon,
+    required Locale locale,
+    required Locale currentLocale,
+    required Color textColor,
+    required Color activeColor,
+    required Function(Locale) onTap,
+  }) {
+    final isSelected = locale == currentLocale;
+    return GestureDetector(
+      onTap: () => onTap(locale),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withOpacity(0.1) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.grey.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? activeColor : Colors.grey,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? textColor : Colors.grey.shade600,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: activeColor,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showSettingsBottomSheet(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
@@ -342,7 +502,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Pengaturan',
+                    'settings'.tr(),
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -371,6 +531,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   _showThemeDialog(context);
+                },
+              ),
+              _buildSettingsTile(
+                context,
+                icon: Icons.language_outlined,
+                title: 'language'.tr(),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showLanguageDialog(context);
                 },
               ),
               _buildSettingsTile(
@@ -449,9 +618,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: Column(
+              key: ValueKey(context.locale.toString()),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Header (Logo & Logout)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -497,7 +672,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               borderRadius: BorderRadius.circular(24),
                             ),
                             title: Text(
-                              'Logout',
+                              'logout'.tr(),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: textColor,
@@ -505,9 +680,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            content: const Text(
-                              'Are you sure you want to log out?',
-                              style: TextStyle(
+                            content: Text(
+                              'logout_confirm_desc'.tr(),
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,
                               ),
@@ -526,9 +701,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     vertical: 12,
                                   ),
                                 ),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
+                                child: Text(
+                                  'cancel'.tr(),
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -552,9 +727,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     borderRadius: BorderRadius.circular(32),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Logout',
-                                  style: TextStyle(
+                                child: Text(
+                                  'logout'.tr(),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -572,7 +747,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Main Title
               Text(
-                'Ready to start a session?',
+                'ready_to_start'.tr(),
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -605,11 +780,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 24.0),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 24.0),
                           child: Text(
-                            'New Chat',
-                            style: TextStyle(
+                            'new_chat'.tr(),
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
@@ -637,7 +812,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Chat History Header
               SectionHeader(
-                title: 'Chat history',
+                title: 'chat_history'.tr(),
                 onSeeAll: () async {
                   await Navigator.push(
                     context,
@@ -652,11 +827,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Chat History Chips
               if (_sessions.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 24.0),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
                   child: Text(
-                    'No chat history yet.',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    'no_chat_history'.tr(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 )
               else
@@ -732,7 +907,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Popular Agent Header
               SectionHeader(
-                title: 'Popular Agent',
+                title: 'popular_agent'.tr(),
                 onSeeAll: () async {
                   final shouldReload = await Navigator.push(
                     context,
@@ -756,11 +931,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 )
               else if (_agents.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 24.0),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
                   child: Text(
-                    'No agents available.',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    'no_agents'.tr(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 )
               else
@@ -803,6 +978,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               const SizedBox(height: 40),
             ],
+          ),
           ),
         ),
       ),

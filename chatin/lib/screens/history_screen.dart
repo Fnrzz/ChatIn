@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/chat_service.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/history_chip.dart';
@@ -50,7 +51,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   String _truncateTitle(String? title) {
-    if (title == null || title.trim().isEmpty) return 'New Chat';
+    if (title == null || title.trim().isEmpty) return 'new_chat'.tr();
     List<String> words = title.trim().split(RegExp(r'\s+'));
     if (words.length > 4) {
       return '${words.take(4).join(' ')}...';
@@ -89,7 +90,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  'All Chat History',
+                  'all_chat_history'.tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -110,10 +111,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: CircularProgressIndicator(color: Color(0xFFFFD500)),
                   )
                 : _sessions.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'No chat history yet.',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          'no_chat_history'.tr(),
+                          style: const TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       )
                     : SingleChildScrollView(

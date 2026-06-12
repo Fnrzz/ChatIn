@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/chat_message.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_bubble.dart';
@@ -156,8 +157,8 @@ class _ChatScreenState extends State<ChatScreen> {
           
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('The current agent is no longer available. Switched to another agent.'),
+              SnackBar(
+                content: Text('agent_unavailable'.tr()),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -171,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _isInitializingSession = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load agents: $e')),
+        SnackBar(content: Text('${'failed_to_load_agents'.tr()}$e')),
       );
     }
   }
@@ -208,7 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error initializing session: $e')),
+          SnackBar(content: Text('${'error_initializing_session'.tr()}$e')),
         );
       }
     }
@@ -340,7 +341,7 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _isGenerating = false;
           _messages.add(ChatMessage(
-            content: 'Sorry, something went wrong. Please try again.',
+            content: 'something_went_wrong'.tr(),
             isUser: false,
           ));
         });
@@ -362,12 +363,12 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Delete Chat', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
-        content: const Text('Are you sure you want to delete this chat history?', style: TextStyle(color: Colors.grey)),
+        title: Text('delete_chat'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
+        content: Text('delete_chat_confirm'.tr(), style: const TextStyle(color: Colors.grey)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            child: Text('cancel'.tr(), style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -376,7 +377,7 @@ class _ChatScreenState extends State<ChatScreen> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -404,12 +405,12 @@ class _ChatScreenState extends State<ChatScreen> {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text('Ubah Judul', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+          title: Text('edit_title'.tr(), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
           content: TextField(
             controller: titleController,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
             decoration: InputDecoration(
-              hintText: 'Masukkan judul chat baru',
+              hintText: 'enter_new_title'.tr(),
               hintStyle: const TextStyle(color: Colors.grey),
               enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
               focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFFFD500))),
@@ -419,7 +420,7 @@ class _ChatScreenState extends State<ChatScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: Text('cancel'.tr(), style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -445,7 +446,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
               ),
-              child: const Text('Simpan'),
+              child: Text('save'.tr()),
             ),
           ],
         );
@@ -474,8 +475,8 @@ class _ChatScreenState extends State<ChatScreen> {
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && _isGenerating) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mohon tunggu AI selesai membalas...'),
+            SnackBar(
+              content: Text('wait_ai_reply'.tr()),
               backgroundColor: Colors.orange,
             ),
           );
@@ -524,8 +525,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       Navigator.pop(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Mohon tunggu AI selesai membalas...'),
+                        SnackBar(
+                          content: Text('wait_ai_reply'.tr()),
                           backgroundColor: Colors.orange,
                         ),
                       );
@@ -660,7 +661,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildInitializingState() {
-    final label = _isLoadingAgents ? 'Loading agents...' : 'Initializing session...';
+    final label = _isLoadingAgents ? 'loading_agents'.tr() : 'initializing_session'.tr();
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -695,7 +696,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Start a conversation',
+            'start_conversation'.tr(),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.3),
               fontSize: 18,
@@ -704,7 +705,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Type a message below to begin',
+            'type_a_message'.tr(),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.2),
               fontSize: 14,
@@ -740,9 +741,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Text(
-                  'Stop generate',
-                  style: TextStyle(
+                Text(
+                  'stop_generate'.tr(),
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -33,9 +34,9 @@ class SectionHeader extends StatelessWidget {
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          child: const Text(
-            'See All',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
+          child: Text(
+            'see_all'.tr(),
+            style: const TextStyle(color: Colors.grey, fontSize: 16),
           ),
         ),
       ],
