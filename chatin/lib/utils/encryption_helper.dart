@@ -8,10 +8,9 @@ class EncryptionHelper {
   // Pastikan panjang key tepat 32 byte untuk algoritma AES-256
   static final _key = encrypt.Key.fromUtf8(_keyString.padRight(32, '0').substring(0, 32));
   
-  // Initialization Vector statis atau acak (untuk kesederhanaan sinkronisasi, kita pakai statis)
-  // Catatan keamanan: Penggunaan IV statis kurang disarankan untuk data sensitif yang sama berulang kali,
-  // tetapi cukup untuk level enkripsi aplikasi ini.
-  static final _iv = encrypt.IV.fromLength(16);
+  // Initialization Vector statis. Kita mengambil 16 byte pertama dari _keyString (dari .env)
+  // agar tetap konstan di setiap sesi aplikasi, menghindari bug gagal dekripsi setelah restart.
+  static final _iv = encrypt.IV.fromUtf8(_keyString.padRight(16, '0').substring(0, 16));
   
   static final _encrypter = encrypt.Encrypter(encrypt.AES(_key));
 
