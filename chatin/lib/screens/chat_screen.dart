@@ -264,7 +264,10 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_sessionId == null) {
       if (_selectedAgent == null) return;
       try {
-        _sessionId = await _chatService.createNewSession(_selectedAgent!['id'].toString());
+        _sessionId = await _chatService.createNewSession(
+          _selectedAgent!['id'].toString(),
+          title: _conversationTitle,
+        );
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -392,6 +395,64 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _showEditTitleDialog() {
+    final TextEditingController titleController = TextEditingController(text: _conversationTitle);
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Ubah Judul', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: titleController,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            decoration: InputDecoration(
+              hintText: 'Masukkan judul chat baru',
+              hintStyle: const TextStyle(color: Colors.grey),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFFFD500))),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newTitle = titleController.text.trim();
+                if (newTitle.isNotEmpty && newTitle != _conversationTitle) {
+                  setState(() {
+                    _conversationTitle = newTitle;
+                  });
+                  if (_sessionId != null) {
+                    try {
+                      await _chatService.updateSessionTitleManually(_sessionId!, newTitle);
+                    } catch (e) {
+                      print('Failed to update title: $e');
+                    }
+                  }
+                }
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD500),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+              ),
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -517,50 +578,39 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   const SizedBox(width: 8),
                 ],
-                // Compose button
-                GestureDetector(
-                  onTap: () {
-                    // New chat action
-                    _chatSubscription?.cancel();
-                    setState(() {
-                      _messages.clear();
-                      _conversationTitle = 'New Chat';
-                      _isGenerating = false;
-                      _sessionId = null;
-                    });
-                    _initSession();
-                  },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E1E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit_outlined,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
+
               ],
             ),
             const SizedBox(height: 16),
             // Conversation title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Text(
-                _conversationTitle,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
-                  height: 1.15,
-                  letterSpacing: -0.5,
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _showEditTitleDialog,
+                      child: Text(
+                        _conversationTitle,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
+                          height: 1.15,
+                          letterSpacing: -0.5,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.edit_outlined, color: isDark ? Colors.white70 : Colors.black54, size: 24),
+                    onPressed: _showEditTitleDialog,
+                    tooltip: 'Edit Judul',
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

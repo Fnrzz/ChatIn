@@ -55,7 +55,7 @@ class ChatService {
   }
 
   // Membuat sesi baru di Supabase
-  Future<String> createNewSession(String agentId) async {
+  Future<String> createNewSession(String agentId, {String title = 'New Chat'}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       throw Exception('User is not logged in');
@@ -67,7 +67,7 @@ class ChatService {
     await _supabase.from('chat_sessions').insert({
       'id': sessionId,
       'agent_id': agentId,
-      'title': 'New Chat',
+      'title': title,
       'user_id': userId,
       'created_at': createdAt,
       'summary': null,
@@ -286,5 +286,11 @@ class ChatService {
       client.close();
     }
     return null;
+  }
+  // Memperbarui judul sesi secara manual
+  Future<void> updateSessionTitleManually(String sessionId, String newTitle) async {
+    await _supabase.from('chat_sessions').update({
+      'title': newTitle
+    }).eq('id', sessionId);
   }
 }
