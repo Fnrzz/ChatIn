@@ -57,5 +57,12 @@
   "all_chat_history": "All Chat History",
   "all_agents": "All Agents",
   "chat_with": "Chat with\n{}",
-  "type_here": "Type here..."
+  "type_here": "Type here...",
+  "account_profile": "Account Profile",
+  "profile_updated_success": "Profile updated successfully",
+  "error": "Error",
+  "change_password": "Change Password",
+  "new_password": "New Password",
+  "password_updated_success": "Password updated successfully",
+  "save_changes": "Save Changes"
 }

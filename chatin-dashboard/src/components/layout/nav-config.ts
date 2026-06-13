@@ -1,4 +1,4 @@
-import { Users, BookOpen, MessageSquare } from "lucide-react";
+import { Users, BookOpen, MessageSquare, ImageIcon } from "lucide-react";
 import { type NavItem } from "@/types/navigation";
 
 export const navItems: NavItem[] = [
@@ -19,5 +19,11 @@ export const navItems: NavItem[] = [
     href: "/chat",
     icon: MessageSquare,
     description: "Simulator untuk menguji agen dan RAG",
+  },
+  {
+    title: "Default Avatars",
+    href: "/avatars",
+    icon: ImageIcon,
+    description: "Kelola pilihan karakter avatar user",
   },
 ];

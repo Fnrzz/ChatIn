@@ -57,5 +57,12 @@
   "all_chat_history": "Semua Riwayat Chat",
   "all_agents": "Semua Agen",
   "chat_with": "Chat dengan\n{}",
-  "type_here": "Ketik di sini..."
+  "type_here": "Ketik di sini...",
+  "account_profile": "Profil Akun",
+  "profile_updated_success": "Profil berhasil diperbarui",
+  "error": "Kesalahan",
+  "change_password": "Ubah Kata Sandi",
+  "new_password": "Kata Sandi Baru",
+  "password_updated_success": "Kata sandi berhasil diperbarui",
+  "save_changes": "Simpan Perubahan"
 }

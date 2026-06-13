@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
+import 'package:provider/provider.dart';
 import '../models/chat_message.dart';
+import '../providers/auth_provider.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -12,7 +14,7 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: message.isUser ? _buildUserBubble() : _buildAiBubble(),
+      child: message.isUser ? _buildUserBubble(context) : _buildAiBubble(),
     );
   }
 
@@ -107,7 +109,10 @@ class ChatBubble extends StatelessWidget {
     }).toList();
   }
 
-  Widget _buildUserBubble() {
+  Widget _buildUserBubble(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+    final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -121,11 +126,19 @@ class ChatBubble extends StatelessWidget {
               Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFF8BBD0),
+                  color: const Color(0xFFF8BBD0),
+                  image: avatarUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(avatarUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 16),
+                child: avatarUrl == null
+                    ? const Icon(Icons.person, color: Colors.white, size: 16)
+                    : null,
               ),
               const SizedBox(width: 6),
               const Text(

@@ -51,6 +51,46 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile(String name, String? avatarUrl) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final updates = {'name': name};
+      if (avatarUrl != null && avatarUrl.isNotEmpty) {
+        updates['avatar_url'] = avatarUrl;
+      }
+
+      await _supabase.auth.updateUser(
+        UserAttributes(data: updates),
+      );
+      
+      // Update local user reference
+      _user = _supabase.auth.currentUser;
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // ==========================================
   // Native Google Sign-In (google_sign_in v7.x)
   // ==========================================

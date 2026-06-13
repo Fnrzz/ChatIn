@@ -8,6 +8,7 @@ import '../providers/theme_provider.dart';
 import 'chat_screen.dart';
 import 'history_screen.dart';
 import 'agents_screen.dart';
+import 'profile_screen.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/history_chip.dart';
 import '../widgets/agent_card.dart';
@@ -516,11 +517,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildSettingsTile(
                 context,
                 icon: Icons.person_outline_rounded,
-                title: 'Akun / Profil',
+                title: 'account_profile'.tr(),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Menu Profil belum tersedia')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
                   );
                 },
               ),
