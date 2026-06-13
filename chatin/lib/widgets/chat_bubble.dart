@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import '../models/chat_message.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -65,22 +66,41 @@ class ChatBubble extends StatelessWidget {
             color: const Color(0xFF3A3A3A),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: MarkdownBody(
-            data: paragraph.trim(),
-            styleSheet: MarkdownStyleSheet(
-              p: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                height: 1.45,
-              ),
-              strong: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                height: 1.45,
-                fontWeight: FontWeight.bold,
-              ),
-              listBullet: const TextStyle(color: Colors.white, fontSize: 15),
+          child: GptMarkdown(
+            paragraph.trim(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              height: 1.45,
             ),
+            latexBuilder: (context, tex, textStyle, inline) {
+              final mathWidget = Math.tex(
+                tex,
+                textStyle: textStyle.copyWith(color: Colors.white),
+                mathStyle: inline ? MathStyle.text : MathStyle.display,
+                onErrorFallback: (err) => Text(
+                  tex,
+                  style: textStyle.copyWith(color: Colors.red),
+                ),
+              );
+              
+              if (inline) {
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: mathWidget,
+                );
+              }
+              
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: mathWidget,
+                ),
+              );
+            },
           ),
         ),
       );
