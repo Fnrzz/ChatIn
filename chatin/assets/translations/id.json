@@ -64,5 +64,14 @@
   "change_password": "Ubah Kata Sandi",
   "new_password": "Kata Sandi Baru",
   "password_updated_success": "Kata sandi berhasil diperbarui",
-  "save_changes": "Simpan Perubahan"
+  "save_changes": "Simpan Perubahan",
+  "choose_theme": "Pilih Tema",
+  "theme_desc": "Sesuaikan tampilan aplikasi dengan gaya Anda.",
+  "system_default": "Sistem (Default)",
+  "light_mode": "Terang (Light)",
+  "dark_mode": "Gelap (Dark)",
+  "about_chatin": "Tentang ChatIn",
+  "about_desc": "ChatIn v1.0.0\nDibangun menggunakan Flutter dan Supabase.",
+  "choose_avatar": "Pilih Avatar",
+  "no_avatar_available": "Belum ada avatar tersedia"
 }

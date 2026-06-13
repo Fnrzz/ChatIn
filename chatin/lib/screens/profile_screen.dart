@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Pilih Avatar',
+                'choose_avatar'.tr(),
                 style: TextStyle(
                   color: textColor,
                   fontSize: 20,
@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (avatars.isEmpty) {
                       return Center(
                         child: Text(
-                          'Belum ada avatar tersedia',
+                          'no_avatar_available'.tr(),
                           style: TextStyle(color: textColor),
                         ),
                       );

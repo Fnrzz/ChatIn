@@ -64,5 +64,14 @@
   "change_password": "Change Password",
   "new_password": "New Password",
   "password_updated_success": "Password updated successfully",
-  "save_changes": "Save Changes"
+  "save_changes": "Save Changes",
+  "choose_theme": "Choose Theme",
+  "theme_desc": "Customize the app appearance to your style.",
+  "system_default": "System (Default)",
+  "light_mode": "Light Mode",
+  "dark_mode": "Dark Mode",
+  "about_chatin": "About ChatIn",
+  "about_desc": "ChatIn v1.0.0\nBuilt with Flutter and Supabase.",
+  "choose_avatar": "Choose Avatar",
+  "no_avatar_available": "No avatar available"
 }

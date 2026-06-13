@@ -167,7 +167,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Pilih Tema',
+                      'choose_theme'.tr(),
                       style: TextStyle(
                         color: textColor,
                         fontSize: 24,
@@ -177,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sesuaikan tampilan aplikasi dengan gaya Anda.',
+                      'theme_desc'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey.shade500,
@@ -186,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 32),
                     _buildThemeOption(
-                      title: 'Sistem (Default)',
+                      title: 'system_default'.tr(),
                       icon: Icons.settings_system_daydream_outlined,
                       mode: ThemeMode.system,
                       currentMode: currentMode,
@@ -198,7 +198,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildThemeOption(
-                      title: 'Terang (Light)',
+                      title: 'light_mode'.tr(),
                       icon: Icons.light_mode_outlined,
                       mode: ThemeMode.light,
                       currentMode: currentMode,
@@ -210,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildThemeOption(
-                      title: 'Gelap (Dark)',
+                      title: 'dark_mode'.tr(),
                       icon: Icons.dark_mode_outlined,
                       mode: ThemeMode.dark,
                       currentMode: currentMode,
@@ -230,8 +230,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           borderRadius: BorderRadius.circular(24),
                         ),
                       ),
-                      child: const Text(
-                        'Tutup',
+                      child: Text(
+                        'close'.tr(),
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -390,7 +390,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       child: Text(
-                        'Tutup',
+                        'close'.tr(),
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -529,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildSettingsTile(
                 context,
                 icon: Icons.color_lens_outlined,
-                title: 'Tampilan (Theme)',
+                title: 'theme'.tr(),
                 onTap: () {
                   Navigator.pop(context);
                   _showThemeDialog(context);
@@ -547,7 +547,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildSettingsTile(
                 context,
                 icon: Icons.info_outline_rounded,
-                title: 'Tentang Aplikasi',
+                title: 'about_app'.tr(),
                 onTap: () {
                   Navigator.pop(context);
                   showDialog(
@@ -557,12 +557,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      title: Text('Tentang ChatIn', style: TextStyle(color: textColor)),
-                      content: Text('ChatIn v1.0.0\nDibangun menggunakan Flutter dan Supabase.', style: TextStyle(color: textColor)),
+                      title: Text('about_chatin'.tr(), style: TextStyle(color: textColor)),
+                      content: Text('about_desc'.tr(), style: TextStyle(color: textColor)),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text('Tutup', style: TextStyle(color: textColor)),
+                          child: Text('close'.tr(), style: TextStyle(color: textColor)),
                         ),
                       ],
                     ),
