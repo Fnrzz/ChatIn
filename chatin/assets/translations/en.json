@@ -73,5 +73,17 @@
   "about_chatin": "About ChatIn",
   "about_desc": "ChatIn v1.0.0\nBuilt with Flutter and Supabase.",
   "choose_avatar": "Choose Avatar",
-  "no_avatar_available": "No avatar available"
+  "no_avatar_available": "No avatar available",
+  "agree_to": "I agree to the ",
+  "terms_conditions": "Terms & Conditions",
+  "terms_title": "ChatIn Terms and Conditions",
+  "terms_content": "1. Acceptance of Terms\nBy creating an account, you agree to these terms and conditions.\n\n2. Use of Service\nYou agree not to use ChatIn for illegal purposes, spamming, or sharing harmful content.\n\n3. Data Privacy\nWe value your privacy. Your conversation data is used solely to provide relevant AI responses and will not be sold to third parties.\n\n4. Limitation of Liability\nThe AI service is provided 'as is'. We are not responsible for any inaccuracies in the responses provided by the AI.\n\n5. Account Termination\nWe reserve the right to suspend or terminate accounts that violate these terms at any time without prior notice.",
+  "must_agree_terms": "You must agree to the Terms & Conditions to register.",
+  "verify_email": "Verify Email",
+  "otp_sent_to": "We have sent a 6-digit OTP code to ",
+  "enter_otp": "Enter OTP Code",
+  "verify_button": "Verify",
+  "didnt_receive_otp": "Didn't receive the code? ",
+  "resend_otp": "Resend",
+  "otp_verified": "Email verified successfully! Please proceed to the app."
 }

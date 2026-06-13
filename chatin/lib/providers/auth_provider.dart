@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+class FriendlyException implements Exception {
+  final String message;
+  FriendlyException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class AuthProvider extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
   User? _user;
@@ -19,18 +27,71 @@ class AuthProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> register(String name, String email, String password) async {
+  String _getFriendlyErrorMessage(dynamic e) {
+    if (e is AuthException) {
+      if (e.code == 'user_already_exists') return 'Email ini sudah terdaftar. Silakan login.';
+      if (e.code == 'invalid_credentials') return 'Email atau kata sandi salah.';
+      return e.message;
+    }
+    if (e is PostgrestException) {
+      return e.message;
+    }
+    final str = e.toString();
+    if (str.startsWith('Exception: ')) return str.substring(11);
+    if (str.startsWith('FriendlyException: ')) return str.substring(19);
+    return str;
+  }
+
+  Future<bool> register(String name, String email, String password) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      await _supabase.auth.signUp(
+      final res = await _supabase.auth.signUp(
         email: email,
         password: password,
         data: {'name': name},
       );
+      
+      // If session is null, email confirmation is required (OTP sent)
+      return res.session == null;
     } catch (e) {
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> verifyRegistrationOtp(String email, String otp) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _supabase.auth.verifyOTP(
+        type: OtpType.signup,
+        email: email,
+        token: otp,
+      );
+    } catch (e) {
+      throw FriendlyException(_getFriendlyErrorMessage(e));
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resendOtp(String email) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _supabase.auth.resend(
+        type: OtpType.signup,
+        email: email,
+      );
+    } catch (e) {
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -44,7 +105,7 @@ class AuthProvider extends ChangeNotifier {
 
       await _supabase.auth.signInWithPassword(email: email, password: password);
     } catch (e) {
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -68,7 +129,7 @@ class AuthProvider extends ChangeNotifier {
       // Update local user reference
       _user = _supabase.auth.currentUser;
     } catch (e) {
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -84,7 +145,7 @@ class AuthProvider extends ChangeNotifier {
         UserAttributes(password: newPassword),
       );
     } catch (e) {
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -132,7 +193,7 @@ class AuthProvider extends ChangeNotifier {
         // User membatalkan proses login, abaikan error secara diam-diam.
         return;
       }
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -154,7 +215,7 @@ class AuthProvider extends ChangeNotifier {
         // Ignore Google sign out errors if not previously signed in with Google
       }
     } catch (e) {
-      rethrow;
+      throw FriendlyException(_getFriendlyErrorMessage(e));
     } finally {
       _isLoading = false;
       notifyListeners();
