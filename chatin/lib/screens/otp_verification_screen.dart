@@ -83,6 +83,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     try {
       await context.read<AuthProvider>().resendOtp(widget.email);
       _startResendTimer();
+      
+      // Reset OTP fields
+      for (var controller in _controllers) {
+        controller.clear();
+      }
+      if (_focusNodes.isNotEmpty) {
+        _focusNodes.first.requestFocus();
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -165,12 +174,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   children: List.generate(
                     6,
                     (index) => SizedBox(
-                      width: 48,
-                      height: 56,
+                      width: 52,
+                      height: 60,
                       child: TextField(
                         controller: _controllers[index],
                         focusNode: _focusNodes[index],
                         textAlign: TextAlign.center,
+                        textAlignVertical: TextAlignVertical.center,
                         keyboardType: TextInputType.number,
                         maxLength: 1,
                         style: TextStyle(
@@ -180,14 +190,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                         decoration: InputDecoration(
                           counterText: "",
+                          contentPadding: EdgeInsets.zero,
                           filled: true,
                           fillColor: isDark ? Colors.grey.shade900 : Colors.white,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(color: primaryYellow, width: 2),
                           ),
                         ),

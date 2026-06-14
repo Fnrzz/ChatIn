@@ -44,13 +44,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAgents();
     _subscribeToAgents();
 
-    // Reload sessions when user auth state changes (also triggers initially)
+    // Reload sessions and agents when user auth state changes (also triggers initially)
     _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange
         .listen((data) {
-          _loadSessions();
+          if (data.session != null) {
+            _loadSessions();
+            _loadAgents();
+          } else {
+            if (mounted) {
+              setState(() {
+                _sessions = [];
+                _agents = [];
+              });
+            }
+          }
         });
   }
 
@@ -81,11 +90,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadSessions() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null) {
-      final sessions = await _chatService.getSessions(userId);
-      if (mounted) {
-        setState(() {
-          _sessions = sessions;
-        });
+      try {
+        final sessions = await _chatService.getSessions(userId);
+        if (mounted) {
+          setState(() {
+            _sessions = sessions;
+          });
+        }
+      } catch (e) {
+        print('Failed to load sessions: $e');
       }
     } else {
       if (mounted) {
@@ -106,6 +119,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadAgents() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingAgents = true;
+      });
+    }
     try {
       final agents = await _chatService.getAgents();
       if (mounted) {
