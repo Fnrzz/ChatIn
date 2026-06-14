@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ChatIn Landing Page 🌐
 
-## Getting Started
+Public-facing marketing and download page built with **Next.js 16** and **Tailwind CSS 4**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🌟 Overview
+
+Landing page untuk aplikasi ChatIn — menampilkan hero section dengan mockup aplikasi, call-to-action buttons, dan informasi rating di App Store & Google Play.
+
+---
+
+## ⚡ Tech Stack
+
+| Package         | Version  | Purpose                       |
+| --------------- | -------- | ----------------------------- |
+| `next`          | 16.2.9   | React framework (App Router)  |
+| `react`         | 19.2.4   | UI library                    |
+| `tailwindcss`   | ^4       | Utility-first CSS framework   |
+| `lucide-react`  | ^1.18.0  | Icon library                  |
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx           # Root layout (Geist fonts, Navbar)
+│   ├── page.tsx             # Landing page (renders Hero)
+│   ├── globals.css          # Global styles & Tailwind imports
+│   └── favicon.ico          # App favicon
+└── components/
+    ├── Navbar.tsx            # Fixed navbar with logo, nav links, auth buttons
+    └── Hero.tsx              # Hero section: headline, CTA, ratings, mockup
+
+public/
+├── app_logo.png             # ChatIn logo
+├── background/
+│   └── background-hero.avif # Hero background image
+├── mockup/
+│   └── homepage-new.avif    # App mockup screenshot
+└── svg/
+    ├── appstore.svg          # App Store badge
+    └── googleplay.svg        # Google Play badge
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔑 Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Hero Section** — Full-screen hero dengan background image dan overlay
+- **App Mockup** — Phone mockup menampilkan screenshot aplikasi
+- **CTA Buttons** — "Get 14-days free trial" & "Download the app"
+- **Store Ratings** — Badge App Store & Google Play dengan rating
+- **Glassmorphism** — Modern `backdrop-blur` effects pada buttons dan navbar
+- **Responsive** — Layout yang menyesuaikan desktop & mobile
+- **Fixed Navbar** — Navigation bar yang tetap di atas saat scroll
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Prerequisites
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Node.js `>= 18`
 
-## Deploy on Vercel
+### Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Navigate to the landing page directory
+cd chatin-landingpage
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+```
+
+Landing page akan berjalan di `http://localhost:3000` (atau port berikutnya jika 3000 sudah digunakan).
+
+---
+
+## 🎨 Design
+
+- **Font**: Geist Sans & Geist Mono (via `next/font/google`)
+- **Background**: Full-bleed hero image dengan dark overlay (`bg-black/40`)
+- **Colors**: Dark green primary (`#0E3524`), white text, glass effects
+- **Style**: Modern glassmorphism dengan `backdrop-blur-md` dan `border-white/40`
+
+---
+
+## 📝 Sections (Current)
+
+| Section   | Status | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| Navbar    | ✅     | Logo, nav links (Home, Features, Pricing, About) |
+| Hero      | ✅     | Headline, subtitle, CTAs, store ratings, mockup  |
+| Features  | 🔜     | App feature highlights                           |
+| Pricing   | 🔜     | Subscription plan comparison                     |
+| About     | 🔜     | About the app & team                             |
+| Footer    | 🔜     | Links, social media, copyright                   |
